@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farm Out vs. Presupuesto Propio — Análisis de Sobrecosto</title>
+<style>
+  :root{
+    --bg:#F6F6F7;
+    --paper:#FFFFFF;
+    --ink:#181818;
+    --ink-soft:#5B5B60;
+    --line:#E7E5E6;
+    --brand:#C8102E;
+    --brand-dark:#8C0F24;
+    --brand-soft:#E2909D;
+    --alert:#C8102E;
+    --alert-soft:#FBE3E6;
+    --good:#1E8A5F;
+    --good-soft:#DCF2E7;
+    --amber-track:#F0E2E4;
+    --font-display:'Avenir Next', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+    --font-body:-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono:'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); -webkit-font-smoothing:antialiased;}
+  .mono{font-family:var(--font-mono);}
+  h1,h2,h3,.display{font-family:var(--font-display); letter-spacing:-.01em;}
+  ::selection{background:var(--brand); color:#fff;}
+
+  .wrap{max-width:1180px; margin:0 auto; padding:0 32px;}
+
+  /* HEADER */
+  header{background:var(--brand); color:#EFF3F0; padding:36px 0 0; position:relative; overflow:hidden;}
+  header::after{content:""; position:absolute; inset:0; background-image: radial-gradient(circle at 90% 10%, rgba(255,255,255,0.06) 0, transparent 45%); pointer-events:none;}
+  header h1{font-size:clamp(20px, 2.4vw, 28px); line-height:1.2; margin:0; font-weight:600; color:#fff; position:relative; z-index:1;}
+  .meta-row{display:flex; gap:22px; flex-wrap:wrap; margin-top:14px; font-family:var(--font-mono); font-size:11.5px; color:#B7C7C1; position:relative; z-index:1;}
+  .meta-row b{color:#fff; font-weight:600;}
+
+  /* TAB BAR */
+  .tabbar{
+    display:flex; gap:2px; margin-top:24px; position:relative; z-index:1;
+    border-bottom:1px solid rgba(255,255,255,0.14);
+  }
+  .tabbar button{
+    border:none; background:transparent; color:#B7C7C1; font-family:var(--font-mono); font-size:13.5px;
+    font-weight:600; padding:13px 22px; cursor:pointer; position:relative; top:1px;
+    border-bottom:3px solid transparent; transition:color .18s ease, border-color .18s ease;
+  }
+  .tabbar button:hover{color:#fff;}
+  .tabbar button.active{color:#fff; border-bottom-color:var(--alert);}
+
+  /* ROUTE DIVIDER — signature element */
+  .route{display:flex; align-items:center; gap:6px; margin:0; padding:0; height:14px; width:100%; overflow:hidden;}
+  .route .stop{width:6px; height:6px; border-radius:50%; background:var(--brand-soft); flex:none;}
+  .route .seg{flex:1; height:2px; background:repeating-linear-gradient(90deg, var(--line) 0 8px, transparent 8px 14px);}
+  .route.tight{height:8px; margin:26px 0;}
+
+  /* PANELS */
+  .panel{display:none;}
+  .panel.active{display:block;}
+
+  /* FILTER-ish state label */
+  .state-tag{
+    display:inline-flex; align-items:center; gap:7px; font-family:var(--font-mono); font-size:11.5px;
+    color:var(--ink-soft); margin:20px 0 0; text-transform:uppercase; letter-spacing:.06em;
+  }
+  .state-tag .dot{width:7px; height:7px; border-radius:50%; background:var(--alert);}
+
+  /* HERO STAT */
+  .hero-stat{background:var(--paper); border:1px solid var(--line); border-radius:4px; margin-top:14px; padding:32px 38px; display:grid; grid-template-columns:1.3fr 1fr; gap:40px; box-shadow:0 24px 48px -24px rgba(16,27,24,0.18);}
+  .hero-stat .figure{font-family:var(--font-display); font-weight:700; font-size:clamp(40px, 5.2vw, 62px); color:var(--alert); line-height:1; letter-spacing:-.01em;}
+  .hero-stat .label{font-size:14px; color:var(--ink-soft); margin-top:10px; max-width:440px; line-height:1.55;}
+  .hero-side{display:flex; flex-direction:column; justify-content:center; gap:13px; border-left:1px solid var(--line); padding-left:34px;}
+  .hero-side .row{display:flex; justify-content:space-between; font-size:13px; color:var(--ink-soft); gap:12px;}
+  .hero-side .row b{font-family:var(--font-mono); color:var(--ink); font-weight:600; font-size:14px; white-space:nowrap;}
+
+  section{padding:44px 0; scroll-margin-top:20px;}
+  section.tight{padding:26px 0 44px;}
+  section.first{padding-top:0;}
+
+  h2{font-size:22px; font-weight:700; margin:0 0 8px;}
+  h2 .idx{font-family:var(--font-mono); color:var(--brand-soft); font-weight:500; font-size:14px; margin-right:10px;}
+  .section-lead{color:var(--ink-soft); font-size:14px; max-width:680px; line-height:1.6; margin:0 0 24px;}
+
+  /* KPI GRID (consolidado only) */
+  .kpis{display:grid; grid-template-columns:repeat(4, 1fr); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden;}
+  .kpi{background:var(--paper); padding:20px 18px; transition:background .2s ease;}
+  .kpi:hover{background:#FAFAF8;}
+  .kpi .k-label{font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); margin-bottom:9px;}
+  .kpi .k-value{font-family:var(--font-mono); font-size:23px; font-weight:700;}
+  .kpi .k-value.alert{color:var(--alert);}
+  .kpi .k-sub{font-size:11.5px; color:var(--ink-soft); margin-top:6px;}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:24px 26px;}
+  .chart-holder{position:relative; width:100%;}
+  .chart-holder svg{width:100%; height:auto; display:block; overflow:visible;}
+  .legend-row{display:flex; gap:20px; margin-top:14px; flex-wrap:wrap;}
+  .legend-item{display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--ink-soft);}
+  .swatch{width:11px; height:11px; border-radius:2px; flex:none;}
+
+  /* TOP 10 RANKING */
+  .top10-row{display:grid; grid-template-columns:26px 1fr 140px 90px 66px; align-items:center; gap:14px; padding:11px 0; border-bottom:1px solid var(--line);}
+  .top10-row:last-child{border-bottom:none;}
+  .top10-rank{font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); text-align:center;}
+  .top10-name{font-size:13.5px; font-weight:600;}
+  .top10-bar-track{height:7px; background:var(--amber-track); border-radius:4px; overflow:hidden;}
+  .top10-bar-fill{height:100%; background:var(--alert); border-radius:4px;}
+  .top10-value{font-size:12.5px; text-align:right; color:var(--alert); font-weight:600;}
+  @media (max-width:700px){
+    .top10-row{grid-template-columns:20px 1fr 70px; row-gap:6px;}
+    .top10-value, .top10-row .pct-pill{grid-column:2/4; justify-self:end;}
+  }
+
+  /* TABLE */
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  thead th{text-align:left; font-family:var(--font-mono); font-weight:500; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-soft); padding:10px 14px; border-bottom:1px solid var(--ink); cursor:pointer; user-select:none; white-space:nowrap; transition:color .15s ease;}
+  thead th:hover{color:var(--ink);}
+  thead th.num, td.num{text-align:right;}
+  thead th .arrow{display:inline-block; margin-left:4px; opacity:.25; font-size:10px;}
+  thead th.sorted .arrow{opacity:1; color:var(--brand);}
+  tbody td{padding:12px 14px; border-bottom:1px solid var(--line); vertical-align:middle;}
+  tbody tr{transition:background .15s ease;}
+  tbody tr:hover{background:#FAFAF8;}
+  td.route-name{font-weight:600;}
+  .route-tag{font-family:var(--font-mono); font-size:10.5px; color:var(--ink-soft); font-weight:400; margin-left:8px; padding:2px 7px; border:1px solid var(--line); border-radius:10px;}
+  .svc-cell{display:flex; flex-wrap:wrap; gap:5px; max-width:220px;}
+  .svc-tag{font-family:var(--font-mono); font-size:11px; color:var(--brand-dark); background:var(--alert-soft); padding:2px 7px; border-radius:4px; white-space:nowrap;}
+  td.mono, th.num{font-family:var(--font-mono);}
+  .bar-cell{display:flex; align-items:center; gap:10px;}
+  .bar-track{flex:1; height:6px; background:var(--amber-track); border-radius:3px; overflow:hidden; min-width:70px;}
+  .bar-fill{height:100%; background:var(--alert); border-radius:3px;}
+  .pct-pill{display:inline-block; padding:3px 9px; border-radius:20px; font-family:var(--font-mono); font-size:12px; font-weight:600; background:var(--alert-soft); color:var(--alert); white-space:nowrap;}
+  .empty-row td{text-align:center; padding:28px; color:var(--ink-soft); font-style:italic;}
+
+  /* INSIGHTS (consolidado only) */
+  .insights{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+  .insight{background:var(--paper); border:1px solid var(--line); border-left:3px solid var(--brand); border-radius:2px; padding:20px 22px;}
+  .insight .tag{font-family:var(--font-mono); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--brand-soft); margin-bottom:9px;}
+  .insight p{margin:0; font-size:13.5px; line-height:1.6; color:var(--ink);}
+  .insight b{color:var(--alert);}
+  .insight b.g{color:var(--good);}
+
+  /* ANNEX (consolidado only) */
+  .annex-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
+  .annex-card{background:var(--paper); border:1px solid var(--line); border-radius:4px; padding:20px 22px;}
+  .annex-title{font-family:var(--font-mono); font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--brand); margin-bottom:14px; padding-bottom:10px; border-bottom:2px solid var(--brand);}
+  .annex-list{margin:0; padding:0; list-style:none;}
+  .annex-list li{font-size:13px; line-height:1.5; color:var(--ink); padding:7px 0; border-bottom:1px solid var(--line); position:relative; padding-left:14px;}
+  .annex-list li:last-child{border-bottom:none;}
+  .annex-list li::before{content:"–"; position:absolute; left:0; color:var(--alert-soft); color:var(--brand-soft);}
+  .annex-sub{display:block; font-size:11.5px; color:var(--ink-soft); font-style:italic; margin-top:2px;}
+  @media (max-width:900px){
+    .annex-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:560px){
+    .annex-grid{grid-template-columns:1fr;}
+  }
+
+  .to-top{position:fixed; right:24px; bottom:24px; width:42px; height:42px; border-radius:50%; background:var(--brand); color:#fff; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; box-shadow:0 12px 24px -10px rgba(140,15,36,0.45); opacity:0; pointer-events:none; transform:translateY(10px); transition:opacity .25s ease, transform .25s ease; z-index:60; font-size:16px;}
+  .to-top.show{opacity:1; pointer-events:auto; transform:translateY(0);}
+  .to-top:hover{background:#234a73;}
+
+  footer{padding:32px 0 56px; border-top:1px solid var(--line); margin-top:8px;}
+  footer p{font-size:12px; color:var(--ink-soft); line-height:1.7; max-width:760px;}
+
+  .chart-tooltip{position:absolute; pointer-events:none; background:var(--ink); color:#fff; font-family:var(--font-mono); font-size:11.5px; padding:7px 10px; border-radius:4px; transform:translate(-50%,-100%); white-space:nowrap; opacity:0; transition:opacity .12s ease; z-index:10;}
+  .chart-tooltip.show{opacity:1;}
+
+  @media (max-width:860px){
+    .wrap{padding:0 20px;}
+    .hero-stat{grid-template-columns:1fr;}
+    .hero-side{border-left:none; border-top:1px solid var(--line); padding-left:0; padding-top:22px;}
+    .kpis{grid-template-columns:repeat(2,1fr);}
+    .insights{grid-template-columns:1fr;}
+    table{font-size:12px;}
+    .tabbar{overflow-x:auto;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <h1>Farm out vs. presupuesto propio — análisis de sobrecosto</h1>
+    <div class="meta-row">
+      <span><b>39</b> servicios</span>
+      <span><b>100</b> líneas</span>
+      <span><b>227</b> salidas farm out</span>
+      <span>Ene–Jul</span>
+    </div>
+    <div class="tabbar" id="tabbar">
+      <button data-tab="florida" class="active">Florida</button>
+      <button data-tab="texas">Texas</button>
+      <button data-tab="consolidado">Consolidado</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ============ FLORIDA PANEL ============ -->
+  <div class="panel active" id="panel-florida">
+    <span class="state-tag"><span class="dot"></span>Florida</span>
+    <div class="hero-stat">
+      <div>
+        <div class="figure" id="fl-figure">—</div>
+        <p class="label" id="fl-label"></p>
+      </div>
+      <div class="hero-side">
+        <div class="row"><span>Costo presupuestado (propio)</span><b id="fl-ppto">—</b></div>
+        <div class="row"><span>Costo real pagado (farm out)</span><b id="fl-real">—</b></div>
+        <div class="row"><span>Salidas en farm out</span><b id="fl-salidas">—</b></div>
+        <div class="row"><span>Costo promedio / salida</span><b id="fl-avg">—</b></div>
+      </div>
+    </div>
+
+    <div class="route tight"><div class="stop"></div><div class="seg"></div><div class="stop"></div><div class="seg"></div><div class="stop"></div></div>
+
+    <section class="tight first">
+      <h2><span class="idx">01</span>Evolución mensual — Florida</h2>
+      <p class="section-lead">Presupuesto propio vs. real farm out, mes a mes, solo para las rutas de Florida.</p>
+      <div class="card">
+        <div class="chart-holder" id="fl-monthly-chart"></div>
+        <div class="legend-row">
+          <div class="legend-item"><span class="swatch" style="background:var(--ink);"></span>Presupuesto propio</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--alert);"></span>Real farm out</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--ink-soft); border-radius:50%;"></span>Variación %</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tight">
+      <h2><span class="idx">02</span>Variación por servicio</h2>
+      <p class="section-lead">Rutas de Florida ordenadas de mayor a menor sobrecosto.</p>
+      <div class="card"><div id="fl-top10"></div></div>
+    </section>
+
+    <section class="tight">
+      <h2><span class="idx">03</span>Rutas asociadas a Florida</h2>
+      <p class="section-lead">Detalle completo. Haz clic en cualquier encabezado para ordenar.</p>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th data-key="Nombre Servicio">Ruta <span class="arrow">↕</span></th>
+              <th>Servicios</th>
+              <th class="num" data-key="salidas">Salidas <span class="arrow">↕</span></th>
+              <th class="num" data-key="ppto">Ppto. propio <span class="arrow">↕</span></th>
+              <th class="num" data-key="real">Real farm out <span class="arrow">↕</span></th>
+              <th class="num sorted" data-key="var">Sobrecosto $ <span class="arrow">↓</span></th>
+              <th style="min-width:150px;">Peso sobre el total</th>
+              <th class="num" data-key="var_pct">Var. % <span class="arrow">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="fl-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ TEXAS PANEL ============ -->
+  <div class="panel" id="panel-texas">
+    <span class="state-tag"><span class="dot"></span>Texas</span>
+    <div class="hero-stat">
+      <div>
+        <div class="figure" id="tx-figure">—</div>
+        <p class="label" id="tx-label"></p>
+      </div>
+      <div class="hero-side">
+        <div class="row"><span>Costo presupuestado (propio)</span><b id="tx-ppto">—</b></div>
+        <div class="row"><span>Costo real pagado (farm out)</span><b id="tx-real">—</b></div>
+        <div class="row"><span>Salidas en farm out</span><b id="tx-salidas">—</b></div>
+        <div class="row"><span>Costo promedio / salida</span><b id="tx-avg">—</b></div>
+      </div>
+    </div>
+
+    <div class="route tight"><div class="stop"></div><div class="seg"></div><div class="stop"></div><div class="seg"></div><div class="stop"></div></div>
+
+    <section class="tight first">
+      <h2><span class="idx">01</span>Evolución mensual — Texas</h2>
+      <p class="section-lead">Presupuesto propio vs. real farm out, mes a mes, solo para las rutas de Texas.</p>
+      <div class="card">
+        <div class="chart-holder" id="tx-monthly-chart"></div>
+        <div class="legend-row">
+          <div class="legend-item"><span class="swatch" style="background:var(--ink);"></span>Presupuesto propio</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--alert);"></span>Real farm out</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--ink-soft); border-radius:50%;"></span>Variación %</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tight">
+      <h2><span class="idx">02</span>Variación por servicio</h2>
+      <p class="section-lead">Rutas de Texas ordenadas de mayor a menor sobrecosto.</p>
+      <div class="card"><div id="tx-top10"></div></div>
+    </section>
+
+    <section class="tight">
+      <h2><span class="idx">03</span>Rutas asociadas a Texas</h2>
+      <p class="section-lead">Detalle completo. Haz clic en cualquier encabezado para ordenar.</p>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th data-key="Nombre Servicio">Ruta <span class="arrow">↕</span></th>
+              <th>Servicios</th>
+              <th class="num" data-key="salidas">Salidas <span class="arrow">↕</span></th>
+              <th class="num" data-key="ppto">Ppto. propio <span class="arrow">↕</span></th>
+              <th class="num" data-key="real">Real farm out <span class="arrow">↕</span></th>
+              <th class="num sorted" data-key="var">Sobrecosto $ <span class="arrow">↓</span></th>
+              <th style="min-width:150px;">Peso sobre el total</th>
+              <th class="num" data-key="var_pct">Var. % <span class="arrow">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="tx-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============ CONSOLIDADO PANEL ============ -->
+  <div class="panel" id="panel-consolidado">
+    <span class="state-tag"><span class="dot"></span>Consolidado — Florida + Texas</span>
+    <div class="hero-stat">
+      <div>
+        <div class="figure" id="co-figure">—</div>
+        <p class="label" id="co-label"></p>
+      </div>
+      <div class="hero-side">
+        <div class="row"><span>Costo presupuestado (propio)</span><b id="co-ppto">—</b></div>
+        <div class="row"><span>Costo real pagado (farm out)</span><b id="co-real">—</b></div>
+        <div class="row"><span>Salidas en farm out</span><b id="co-salidas">—</b></div>
+        <div class="row"><span>Costo promedio / salida</span><b id="co-avg">—</b></div>
+      </div>
+    </div>
+
+    <div class="route tight"><div class="stop"></div><div class="seg"></div><div class="stop"></div><div class="seg"></div><div class="stop"></div></div>
+
+    <section class="tight first">
+      <h2><span class="idx">01</span>El panorama en números</h2>
+      <p class="section-lead">Cuatro cifras que resumen el problema a nivel consolidado, sumando Florida y Texas.</p>
+      <div class="kpis">
+        <div class="kpi"><div class="k-label">Ppto. propio total</div><div class="k-value" id="co-k-ppto">—</div><div class="k-sub">Costo directo, 24 líneas, sin farm out</div></div>
+        <div class="kpi"><div class="k-label">Real farm out total</div><div class="k-value alert" id="co-k-real">—</div><div class="k-sub">Lo efectivamente pagado a terceros</div></div>
+        <div class="kpi"><div class="k-label">Variación %</div><div class="k-value alert" id="co-k-varpct">—</div><div class="k-sub">Sobrecosto sobre lo presupuestado</div></div>
+        <div class="kpi"><div class="k-label">Salidas en farm out</div><div class="k-value" id="co-k-salidas">—</div><div class="k-sub">De 2,446 salidas ppto. SP originales</div></div>
+      </div>
+    </section>
+
+    <section class="tight">
+      <h2><span class="idx">02</span>Evolución mensual — consolidado</h2>
+      <p class="section-lead">Presupuesto propio vs. real farm out, mes a mes, sumando ambos estados.</p>
+      <div class="card">
+        <div class="chart-holder" id="co-monthly-chart"></div>
+        <div class="legend-row">
+          <div class="legend-item"><span class="swatch" style="background:var(--ink);"></span>Presupuesto propio</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--alert);"></span>Real farm out</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--ink-soft); border-radius:50%;"></span>Variación %</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="tight">
+      <h2><span class="idx">03</span>Variación por servicio — Top 10</h2>
+      <p class="section-lead">Las 10 rutas con mayor sobrecosto, combinando Florida y Texas.</p>
+      <div class="card"><div id="co-top10"></div></div>
+    </section>
+
+    <section class="tight">
+      <h2><span class="idx">04</span>Rutas asociadas — todas</h2>
+      <p class="section-lead">Detalle completo de las 11 rutas identificadas, ambos estados. Haz clic en cualquier encabezado para ordenar.</p>
+      <div class="card">
+        <table>
+          <thead>
+            <tr>
+              <th data-key="Nombre Servicio">Ruta <span class="arrow">↕</span></th>
+              <th>Servicios</th>
+              <th class="num" data-key="salidas">Salidas <span class="arrow">↕</span></th>
+              <th class="num" data-key="ppto">Ppto. propio <span class="arrow">↕</span></th>
+              <th class="num" data-key="real">Real farm out <span class="arrow">↕</span></th>
+              <th class="num sorted" data-key="var">Sobrecosto $ <span class="arrow">↓</span></th>
+              <th style="min-width:150px;">Peso sobre el total</th>
+              <th class="num" data-key="var_pct">Var. % <span class="arrow">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="co-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="tight">
+      <h2><span class="idx">05</span>Lectura del análisis</h2>
+      <div class="insights">
+        <div class="insight"><div class="tag">Concentración</div><p>El corredor <b>Miami ⇄ Tallahassee</b> (4 códigos de servicio) suma <b>$86,766</b> de sobrecosto — casi dos tercios del total. Es el primer lugar donde vale la pena resolver disponibilidad propia de bus/conductor antes que negociar tarifas de farm out.</p></div>
+        <div class="insight"><div class="tag">Costo por salida</div><p>En promedio, cada salida cubierta por un tercero cuesta <b>58%</b> más que si se hubiera cubierto con recurso propio ($1,573 vs. $995). No es solo volumen: es una diferencia de tarifa por unidad que se repite mes a mes.</p></div>
+        <div class="insight"><div class="tag">Excepción</div><p><b class="g">Junio</b> es el único mes donde la brecha cae a 19.9% — y en Florida específicamente, el real farm out ($45,101) quedó prácticamente igual al presupuesto ($45,448). Vale la pena revisar qué tarifas o proveedores se usaron ese mes para replicarlo.</p></div>
+        <div class="insight"><div class="tag">Texas: menor volumen, mayor severidad</div><p>Con solo 45 salidas (20% del total), Texas concentra variaciones porcentuales más extremas: <b>Houston ⇄ Austin</b> y <b>Austin ⇄ Dallas</b> superan el 140–205% de sobrecosto. Rutas de bajo volumen pero alto riesgo tarifario.</p></div>
+        <div class="insight"><div class="tag">Tendencia</div><p>El sobrecosto no es decreciente: <b>julio</b> cerró con <b>$31,906</b> de variación negativa, el segundo peor mes del período, después de abril. No hay una tendencia clara de mejora mes a mes.</p></div>
+        <div class="insight"><div class="tag">Dato sin asignar</div><p>28 salidas ($10,180 de sobrecosto) no tienen ruta identificada en la base ("sin ruta"), principalmente por códigos de servicio sin cruce en el maestro. Vale la pena depurar esas líneas para no perder trazabilidad.</p></div>
+      </div>
+    </section>
+
+    <section class="tight">
+      <h2><span class="idx">06</span>Anexo — Qué considera el presupuesto propio</h2>
+      <p class="section-lead">Desglose de las partidas que componen el "Ppto. propio" (costo directo, 24 líneas) usado como base de comparación en todo este análisis.</p>
+      <div class="annex-grid">
+        <div class="annex-card">
+          <div class="annex-title">Tripulación / Payroll</div>
+          <ul class="annex-list">
+            <li>Costo Driver <span class="annex-sub">(subtotal: Vacaciones + per diem + trip + Bonus + Drivers Senior)</span></li>
+            <li>Payroll Taxes</li>
+            <li>Uniforms &amp; Badges</li>
+          </ul>
+        </div>
+        <div class="annex-card">
+          <div class="annex-title">Operación de ruta</div>
+          <ul class="annex-list">
+            <li>Fuel</li>
+            <li>Lodging <span class="annex-sub">(Drivers only)</span></li>
+            <li>Tolls</li>
+            <li>Parking</li>
+            <li>Water &amp; Snack for buses</li>
+          </ul>
+        </div>
+        <div class="annex-card">
+          <div class="annex-title">Mantenimiento</div>
+          <ul class="annex-list">
+            <li>Mechanics</li>
+            <li>Cleaners</li>
+            <li>Dump &amp; Wash</li>
+            <li>Oil &amp; Lubes</li>
+            <li>Tires</li>
+            <li>Shop Supplies &amp; Tools</li>
+            <li>Outside Vehicle Maintenance &amp; Third Party repairs</li>
+            <li>Replacement Parts</li>
+            <li>Tow Expense</li>
+            <li>Travel expenses to rescue buses</li>
+          </ul>
+        </div>
+        <div class="annex-card">
+          <div class="annex-title">Estructura / otros directos</div>
+          <ul class="annex-list">
+            <li>Operations</li>
+            <li>Office</li>
+            <li>Sales</li>
+            <li>Licenses and Permits</li>
+            <li>GPS Tracking + Telephone</li>
+            <li>Insurance Buses</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="route tight" style="margin-bottom:20px;"><div class="stop"></div><div class="seg"></div><div class="stop"></div><div class="seg"></div><div class="stop"></div></div>
+    <p><b>Metodología:</b> el "Ppto. propio" corresponde al costo directo presupuestado para operación con recurso propio (24 líneas, sin costo de farm out). El "Real farm out" es el costo efectivamente pagado a terceros cuando el servicio, aun presupuestado como propio, se cubrió con un proveedor externo por falta de conductor o bus disponible. La variación se calcula como Ppto. − Real; un valor negativo indica sobrecosto. Base: 100 líneas de servicio, enero–julio.</p>
+  </footer>
+</div>
+
+<button class="to-top" id="toTop" aria-label="Volver arriba">↑</button>
+
+<script>
+const DATA = {"monthly": [{"Mes": "Enero", "ppto": 25296.622230281337, "real": 44163.01, "salidas": 29, "var": -18866.387769718665, "var_pct": -74.58065981289252}, {"Mes": "Febrero", "ppto": 20232.63595180719, "real": 33060.0, "salidas": 23, "var": -12827.364048192809, "var_pct": -63.399371583350515}, {"Mes": "Marzo", "ppto": 18316.270225632514, "real": 30579.5, "salidas": 17, "var": -12263.229774367486, "var_pct": -66.95265806466338}, {"Mes": "Abril", "ppto": 34653.69582294218, "real": 58346.0, "salidas": 30, "var": -23692.30417705782, "var_pct": -68.36876591204029}, {"Mes": "Mayo", "ppto": 26519.053654443902, "real": 48552.25, "salidas": 29, "var": -22033.196345556098, "var_pct": -83.08439898594914}, {"Mes": "Junio", "ppto": 48549.6364709345, "real": 58201.0, "salidas": 48, "var": -9651.3635290655, "var_pct": -19.879373421968957}, {"Mes": "Julio", "ppto": 52362.69394396676, "real": 84269.0, "salidas": 51, "var": -31906.306056033238, "var_pct": -60.93327835687011}], "monthly_state": [{"Mes": "Abril", "Estado": "Florida", "ppto": 29007.057793068816, "real": 50286.0, "salidas": 24}, {"Mes": "Abril", "Estado": "Texas", "ppto": 5646.638029873366, "real": 8060.0, "salidas": 6}, {"Mes": "Enero", "Estado": "Florida", "ppto": 20318.849308798206, "real": 32650.510000000002, "salidas": 21}, {"Mes": "Enero", "Estado": "Texas", "ppto": 4977.772921483131, "real": 11512.5, "salidas": 8}, {"Mes": "Febrero", "Estado": "Florida", "ppto": 14461.378536005506, "real": 20800.0, "salidas": 13}, {"Mes": "Febrero", "Estado": "Texas", "ppto": 5771.257415801687, "real": 12260.0, "salidas": 10}, {"Mes": "Julio", "Estado": "Florida", "ppto": 49309.70796592744, "real": 74894.0, "salidas": 45}, {"Mes": "Julio", "Estado": "Texas", "ppto": 3052.9859780393226, "real": 9375.0, "salidas": 6}, {"Mes": "Junio", "Estado": "Florida", "ppto": 45448.4325402594, "real": 45101.0, "salidas": 41}, {"Mes": "Junio", "Estado": "Texas", "ppto": 3101.203930675103, "real": 13100.0, "salidas": 7}, {"Mes": "Marzo", "Estado": "Florida", "ppto": 16214.08904909959, "real": 25379.5, "salidas": 14}, {"Mes": "Marzo", "Estado": "Texas", "ppto": 2102.1811765329226, "real": 5200.0, "salidas": 3}, {"Mes": "Mayo", "Estado": "Florida", "ppto": 23200.746425124682, "real": 40272.25, "salidas": 24}, {"Mes": "Mayo", "Estado": "Texas", "ppto": 3318.307229319218, "real": 8280.0, "salidas": 5}], "by_state": [{"Estado": "Florida", "ppto": 197960.26161828364, "real": 289383.26, "salidas": 182, "var": -91422.99838171637, "var_pct": -46.182500282810565}, {"Estado": "Texas", "ppto": 27970.34668172475, "real": 67787.5, "salidas": 45, "var": -39817.15331827525, "var_pct": -142.3548795134919}], "by_route": [{"Nombre Servicio": "Miami - Tallahassee", "Estado": "Florida", "ppto": 91042.34836646813, "real": 136978.39, "salidas": 81, "servicios": [7060, 8022, 8080, 9016, 9036], "var": -45936.04163353189, "var_pct": -50.455686235846954}, {"Nombre Servicio": "Tallahassee - Miami", "Estado": "Florida", "ppto": 81049.76864798287, "real": 121879.87, "salidas": 74, "servicios": [7063, 8023, 8083, 9017, 9037], "var": -40830.101352017125, "var_pct": -50.37657976465215}, {"Nombre Servicio": "Houston - Dallas", "Estado": "Texas", "ppto": 10668.666983874919, "real": 23741.25, "salidas": 14, "servicios": [7118, 9112, 9114, 9144, 9174], "var": -13072.583016125081, "var_pct": -122.53248729090096}, {"Nombre Servicio": "Dallas - Houston", "Estado": "Texas", "ppto": 8514.800168879605, "real": 16041.25, "salidas": 11, "servicios": [7117, 9111, 9113, 9173], "var": -7526.449831120395, "var_pct": -88.39255979991766}, {"Nombre Servicio": "(sin ruta)", "Estado": "Texas", "ppto": 973.2308140601999, "real": 8450.0, "salidas": 5, "servicios": [7172, 7173, 8133, 8187, 8188], "var": -7476.7691859398, "var_pct": -768.2421351567809}, {"Nombre Servicio": "Houston - Austin", "Estado": "Texas", "ppto": 3561.2296920610156, "real": 8902.5, "salidas": 7, "servicios": [7145, 8183, 8185, 8187, 8199], "var": -5341.270307938985, "var_pct": -149.9838755092428}, {"Nombre Servicio": "Austin - Houston", "Estado": "Texas", "ppto": 2939.3882031264593, "real": 7002.5, "salidas": 6, "servicios": [7144, 8182, 8184, 8186, 8188], "var": -4063.1117968735407, "var_pct": -138.2298463521028}, {"Nombre Servicio": "(sin ruta)", "Estado": "Florida", "ppto": 23271.656794260947, "real": 25975.0, "salidas": 23, "servicios": [7000, 7001, 7060, 7063, 9037], "var": -2703.343205739053, "var_pct": -11.616462160982573}, {"Nombre Servicio": "Austin - Dallas", "Estado": "Texas", "ppto": 605.9284369966163, "real": 1850.0, "salidas": 1, "servicios": [8130], "var": -1244.0715630033837, "var_pct": -205.3165831215694}, {"Nombre Servicio": "Tampa - Miami", "Estado": "Florida", "ppto": 1305.8751547858415, "real": 2400.0, "salidas": 2, "servicios": [7037, 8031], "var": -1094.1248452141585, "var_pct": -83.78479682413369}, {"Nombre Servicio": "Dallas  - TAMU", "Estado": "Texas", "ppto": 707.102382725935, "real": 1800.0, "salidas": 1, "servicios": [8155], "var": -1092.897617274065, "var_pct": -154.56002468282728}, {"Nombre Servicio": "Miami - Tampa", "Estado": "Florida", "ppto": 1290.6126547858407, "real": 2150.0, "salidas": 2, "servicios": [7038], "var": -859.3873452141593, "var_pct": -66.58754987620686}], "totals": {"ppto": 225930.6083000084, "real": 357170.76, "var": -131240.1516999916, "var_pct": -58.08869930794, "salidas": 227, "n_servicios": 39, "n_filas": 100}};
+
+const MONTH_ORDER = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio"];
+const fmtMoney = n => '$' + Math.round(Math.abs(n)).toLocaleString('en-US');
+const fmtMoney2 = n => '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtPct = n => (n>=0?'+':'') + n.toFixed(1) + '%';
+
+/* ---------------- SVG chart helper (no external libs) ---------------- */
+const SVGNS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs){ const el = document.createElementNS(SVGNS, tag); for(const k in attrs) el.setAttribute(k, attrs[k]); return el; }
+function ensureTooltip(holder){
+  let tip = holder.querySelector('.chart-tooltip');
+  if(!tip){ tip = document.createElement('div'); tip.className = 'chart-tooltip'; holder.style.position = 'relative'; holder.appendChild(tip); }
+  return tip;
+}
+function showTip(holder, tip, x, y, html){ tip.innerHTML = html; tip.style.left = x+'px'; tip.style.top = (y-8)+'px'; tip.classList.add('show'); }
+function hideTip(tip){ tip.classList.remove('show'); }
+
+function renderMonthlyChart(holder, rows){
+  holder.innerHTML = '';
+  const W = 900, H = 320, padL = 56, padR = 46, padT = 20, padB = 34;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+  const svg = svgEl('svg', {viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet'});
+  const maxVal = Math.max(...rows.map(r=>Math.max(r.ppto, r.real)), 1);
+  const minPct = Math.min(...rows.map(r=>r.var_pct), 0);
+  const maxPct = Math.max(...rows.map(r=>r.var_pct), 0);
+  const pctRange = Math.max(Math.abs(minPct), Math.abs(maxPct), 20) * 1.15;
+
+  const ySteps = 4;
+  for(let i=0;i<=ySteps;i++){
+    const val = maxVal * i/ySteps;
+    const y = padT + plotH - (val/maxVal)*plotH;
+    svg.appendChild(svgEl('line', {x1:padL, x2:W-padR, y1:y, y2:y, stroke:'#ECEAEB', 'stroke-width':1}));
+    const t = svgEl('text', {x:padL-8, y:y+4, 'text-anchor':'end', 'font-size':11, fill:'#5B5B60'});
+    t.textContent = '$'+Math.round(val/1000)+'k';
+    svg.appendChild(t);
+  }
+
+  const groupW = plotW / rows.length;
+  const barW = groupW * 0.28;
+  const linePts = [];
+
+  rows.forEach((r, i)=>{
+    const gx = padL + groupW*i;
+    const cx = gx + groupW/2;
+    const hPpto = (r.ppto/maxVal)*plotH;
+    const bx1 = cx - barW - 3;
+    const by1 = padT + plotH - hPpto;
+    const rect1 = svgEl('rect', {x:bx1, y:by1, width:barW, height:Math.max(hPpto,0), rx:2, fill:'#181818', class:'bar-hit'});
+    rect1.dataset.tip = `${r.Mes} · Presupuesto: ${fmtMoney(r.ppto)}`;
+    svg.appendChild(rect1);
+    const hReal = (r.real/maxVal)*plotH;
+    const bx2 = cx + 3;
+    const by2 = padT + plotH - hReal;
+    const rect2 = svgEl('rect', {x:bx2, y:by2, width:barW, height:Math.max(hReal,0), rx:2, fill:'#C8102E', class:'bar-hit'});
+    rect2.dataset.tip = `${r.Mes} · Real farm out: ${fmtMoney(r.real)}`;
+    svg.appendChild(rect2);
+    const lbl = svgEl('text', {x:cx, y:H-12, 'text-anchor':'middle', 'font-size':11.5, fill:'#5B5B60'});
+    lbl.textContent = r.Mes.slice(0,3);
+    svg.appendChild(lbl);
+    const pctY = padT + plotH/2 - (r.var_pct/pctRange)*(plotH/2);
+    linePts.push([cx, pctY, r]);
+  });
+
+  const poly = svgEl('polyline', {points: linePts.map(p=>p[0]+','+p[1]).join(' '), fill:'none', stroke:'#5B5B60', 'stroke-width':1.6, 'stroke-dasharray':'5,3'});
+  svg.appendChild(poly);
+  linePts.forEach(([x,y,r])=>{
+    const dot = svgEl('circle', {cx:x, cy:y, r:3.6, fill:'#5B5B60', class:'bar-hit'});
+    dot.dataset.tip = `${r.Mes} · Variación: ${fmtPct(r.var_pct)}`;
+    svg.appendChild(dot);
+  });
+
+  holder.appendChild(svg);
+  const tip = ensureTooltip(holder);
+  svg.querySelectorAll('.bar-hit').forEach(el=>{
+    el.addEventListener('mousemove', (e)=>{ const rect = holder.getBoundingClientRect(); showTip(holder, tip, e.clientX-rect.left, e.clientY-rect.top, el.dataset.tip); });
+    el.addEventListener('mouseleave', ()=>hideTip(tip));
+  });
+}
+
+/* ---------------- data getters per state ---------------- */
+function getMonthlyForState(estado){
+  if(estado==='Consolidado') return DATA.monthly;
+  return MONTH_ORDER.map(mes=>{
+    const rec = DATA.monthly_state.find(x=>x.Mes===mes && x.Estado===estado);
+    if(!rec) return {Mes:mes, ppto:0, real:0, salidas:0, var:0, var_pct:0};
+    const v = rec.ppto - rec.real;
+    return {Mes:mes, ppto:rec.ppto, real:rec.real, salidas:rec.salidas, var:v, var_pct: rec.ppto? (v/rec.ppto*100):0};
+  });
+}
+function getRoutesForState(estado){
+  if(estado==='Consolidado'){
+    const map = {};
+    DATA.by_route.forEach(r=>{
+      const k = r["Nombre Servicio"];
+      if(!map[k]) map[k] = {"Nombre Servicio":k, ppto:0, real:0, salidas:0, estados:new Set(), servicios:new Set()};
+      map[k].ppto += r.ppto; map[k].real += r.real; map[k].salidas += r.salidas; map[k].estados.add(r.Estado);
+      (r.servicios||[]).forEach(s=>map[k].servicios.add(s));
+    });
+    return Object.values(map).map(r=>({
+      "Nombre Servicio": r["Nombre Servicio"], ppto:r.ppto, real:r.real, salidas:r.salidas,
+      var: r.ppto-r.real, var_pct: (r.ppto-r.real)/r.ppto*100, estados: Array.from(r.estados),
+      servicios: Array.from(r.servicios).sort((a,b)=>a-b)
+    }));
+  }
+  return DATA.by_route.filter(r=>r.Estado===estado).map(r=>({...r, estados:[r.Estado]}));
+}
+function getHeroForState(estado){
+  if(estado==='Consolidado') return DATA.totals;
+  const s = DATA.by_state.find(x=>x.Estado===estado);
+  return {ppto:s.ppto, real:s.real, var:s.var, var_pct:s.var_pct, salidas:s.salidas};
+}
+
+/* ---------------- top 10 ranking ---------------- */
+function renderTop10(container, routes, showTag){
+  const sorted = [...routes].sort((a,b)=>a.var-b.var);
+  const top = sorted.slice(0, Math.min(10, sorted.length));
+  const maxAbs = Math.max(...top.map(r=>Math.abs(r.var)), 1);
+  container.innerHTML = '';
+  top.forEach((r,i)=>{
+    const tag = showTag && r.estados && r.estados.length ? `<span class="route-tag">${r.estados.join(' / ')}</span>` : '';
+    const row = document.createElement('div');
+    row.className = 'top10-row';
+    row.innerHTML = `
+      <span class="top10-rank mono">${i+1}</span>
+      <span class="top10-name">${r["Nombre Servicio"]}${tag}</span>
+      <div class="top10-bar-track"><div class="top10-bar-fill" style="width:${(Math.abs(r.var)/maxAbs*100)}%"></div></div>
+      <span class="top10-value mono">−${fmtMoney(r.var)}</span>
+      <span class="pct-pill">${fmtPct(r.var_pct)}</span>
+    `;
+    container.appendChild(row);
+  });
+}
+
+/* ---------------- route table (sortable, per state) ---------------- */
+const sortStates = {
+  florida: {key:'var', dir:'asc'},
+  texas: {key:'var', dir:'asc'},
+  consolidado: {key:'var', dir:'asc'}
+};
+const routeCache = {};
+
+function sortRoutes(rows, sortState){
+  const dir = sortState.dir==='asc' ? 1 : -1;
+  return [...rows].sort((a,b)=>{
+    let av=a[sortState.key], bv=b[sortState.key];
+    if(typeof av==='string') return av.localeCompare(bv)*dir;
+    return (av-bv)*dir;
+  });
+}
+
+function renderTableRows(tbodyId, rows, showTag){
+  const tbody = document.getElementById(tbodyId);
+  tbody.innerHTML = '';
+  if(rows.length===0){ tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Sin datos.</td></tr>'; return; }
+  const totalVarAbs = Math.abs(rows.reduce((s,r)=>s+r.var,0)) || 1;
+  const maxVar = Math.max(...rows.map(r=>Math.abs(r.var))) || 1;
+  rows.forEach(r=>{
+    const pctOfTotal = (Math.abs(r.var)/totalVarAbs)*100;
+    const barWidth = (Math.abs(r.var)/maxVar)*100;
+    const tagLabel = showTag && r.estados && r.estados.length ? `<span class="route-tag">${r.estados.join(' / ')}</span>` : '';
+    const serviciosHtml = (r.servicios||[]).map(s=>`<span class="svc-tag">${s}</span>`).join('');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="route-name">${r["Nombre Servicio"]}${tagLabel}</td>
+      <td class="svc-cell">${serviciosHtml}</td>
+      <td class="num mono">${r.salidas}</td>
+      <td class="num mono">${fmtMoney(r.ppto)}</td>
+      <td class="num mono">${fmtMoney(r.real)}</td>
+      <td class="num mono" style="color:var(--alert); font-weight:600;">−${fmtMoney(r.var)}</td>
+      <td><div class="bar-cell"><div class="bar-track"><div class="bar-fill" style="width:${barWidth}%"></div></div><span class="mono" style="font-size:12px; color:var(--ink-soft); min-width:38px;">${pctOfTotal.toFixed(1)}%</span></div></td>
+      <td class="num"><span class="pct-pill">${fmtPct(r.var_pct)}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function attachSort(stateKey, theadEl, tbodyId, showTag){
+  theadEl.querySelectorAll('th[data-key]').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const key = th.dataset.key;
+      const ss = sortStates[stateKey];
+      if(ss.key===key){ ss.dir = ss.dir==='asc' ? 'desc' : 'asc'; } else { ss.key = key; ss.dir = 'asc'; }
+      theadEl.querySelectorAll('th').forEach(h=>{ h.classList.remove('sorted'); const a=h.querySelector('.arrow'); if(a) a.textContent='↕'; });
+      th.classList.add('sorted');
+      th.querySelector('.arrow').textContent = ss.dir==='asc' ? '↑' : '↓';
+      renderTableRows(tbodyId, sortRoutes(routeCache[stateKey], ss), showTag);
+    });
+  });
+}
+
+/* ---------------- init each panel ---------------- */
+function initPanel(prefix, stateKey, estadoLabel, showTag){
+  const hero = getHeroForState(estadoLabel);
+  document.getElementById(prefix+'-figure').textContent = fmtMoney(hero.var);
+  document.getElementById(prefix+'-label').innerHTML = estadoLabel==='Consolidado'
+    ? `Sobrecosto acumulado entre enero y julio, sumando Florida y Texas: es lo que pagamos de más frente a lo presupuestado, únicamente por haber tenido que salir a farm out. Equivale a un <b style="color:var(--alert)">${Math.abs(hero.var_pct).toFixed(1)}%</b> por encima de lo presupuestado.`
+    : `Sobrecosto acumulado en <b style="color:var(--alert)">${estadoLabel}</b> entre enero y julio, equivalente a un <b style="color:var(--alert)">${Math.abs(hero.var_pct).toFixed(1)}%</b> por encima de lo presupuestado como operación propia.`;
+  document.getElementById(prefix+'-ppto').textContent = fmtMoney2(hero.ppto);
+  document.getElementById(prefix+'-real').textContent = fmtMoney2(hero.real);
+  document.getElementById(prefix+'-salidas').textContent = hero.salidas.toLocaleString('en-US');
+  document.getElementById(prefix+'-avg').textContent = fmtMoney2(hero.real/hero.salidas);
+
+  if(estadoLabel==='Consolidado'){
+    document.getElementById('co-k-ppto').textContent = fmtMoney(hero.ppto);
+    document.getElementById('co-k-real').textContent = fmtMoney(hero.real);
+    document.getElementById('co-k-varpct').textContent = fmtPct(hero.var_pct);
+    document.getElementById('co-k-salidas').textContent = hero.salidas;
+  }
+
+  renderMonthlyChart(document.getElementById(prefix+'-monthly-chart'), getMonthlyForState(estadoLabel));
+
+  const routes = getRoutesForState(estadoLabel);
+  routeCache[stateKey] = routes;
+  renderTop10(document.getElementById(prefix+'-top10'), routes, showTag);
+  renderTableRows(prefix+'-table-body', sortRoutes(routes, sortStates[stateKey]), showTag);
+
+  const theadEl = document.getElementById(prefix+'-table-body').closest('table').querySelector('thead');
+  attachSort(stateKey, theadEl, prefix+'-table-body', showTag);
+}
+
+initPanel('fl', 'florida', 'Florida', false);
+initPanel('tx', 'texas', 'Texas', false);
+initPanel('co', 'consolidado', 'Consolidado', true);
+
+/* ---------------- tab switching ---------------- */
+document.getElementById('tabbar').addEventListener('click', e=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('active', b===btn));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+/* ---------------- back to top ---------------- */
+window.addEventListener('scroll', ()=>{
+  document.getElementById('toTop').classList.toggle('show', window.scrollY > 500);
+}, {passive:true});
+document.getElementById('toTop').addEventListener('click', ()=>window.scrollTo({top:0, behavior:'smooth'}));
+
+window.addEventListener('resize', ()=>{
+  document.querySelectorAll('.panel.active .chart-holder').forEach(h=>{
+    const prefix = h.id.split('-')[0];
+    const stateKey = prefix==='fl'?'florida':prefix==='tx'?'texas':'consolidado';
+    const estadoLabel = stateKey==='florida'?'Florida':stateKey==='texas'?'Texas':'Consolidado';
+    renderMonthlyChart(h, getMonthlyForState(estadoLabel));
+  });
+});
+</script>
+
+</body>
+</html>
