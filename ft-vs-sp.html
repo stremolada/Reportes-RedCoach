@@ -52,6 +52,15 @@
   .tabbar button:hover{color:#fff;}
   .tabbar button.active{color:#fff; border-bottom-color:var(--alert);}
 
+  .perimeter-bar{display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:16px 0; border-bottom:1px solid var(--line);}
+  .perimeter-label{font-family:var(--font-mono); font-size:12px; color:var(--ink-soft); font-weight:600;}
+  .segmented{display:inline-flex; background:var(--paper); border:1px solid var(--line); border-radius:24px; padding:3px; box-shadow:0 4px 14px -8px rgba(16,27,24,0.2);}
+  .segmented button{border:none; background:transparent; font-family:var(--font-mono); font-size:12px; font-weight:600; padding:8px 16px; border-radius:20px; cursor:pointer; color:var(--ink-soft); transition:background .18s ease, color .18s ease; white-space:nowrap;}
+  .segmented button.active{background:var(--brand); color:#fff;}
+  .segmented button:hover:not(.active){color:var(--ink);}
+  .perimeter-hint{font-size:12px; color:var(--ink-soft); font-style:italic;}
+  @media (max-width:700px){ .perimeter-bar{flex-direction:column; align-items:flex-start;} }
+
   /* ROUTE DIVIDER — signature element */
   .route{display:flex; align-items:center; gap:6px; margin:0; padding:0; height:14px; width:100%; overflow:hidden;}
   .route .stop{width:6px; height:6px; border-radius:50%; background:var(--brand-soft); flex:none;}
@@ -152,6 +161,11 @@
   .annex-list li:last-child{border-bottom:none;}
   .annex-list li::before{content:"–"; position:absolute; left:0; color:var(--alert-soft); color:var(--brand-soft);}
   .annex-sub{display:block; font-size:11.5px; color:var(--ink-soft); font-style:italic; margin-top:2px;}
+  .ct-only{transition:opacity .2s ease, text-decoration .2s ease;}
+  .ct-only.excluded{opacity:.4; text-decoration:line-through;}
+  .ct-only-card{transition:opacity .2s ease;}
+  .ct-only-card.excluded{opacity:.45;}
+  .ct-only-card.excluded .annex-title::after{content:" (no incluido en este perímetro)"; font-weight:400; text-transform:none; letter-spacing:0; font-size:10px;}
   @media (max-width:900px){
     .annex-grid{grid-template-columns:repeat(2,1fr);}
   }
@@ -200,6 +214,17 @@
 </header>
 
 <div class="wrap">
+  <div class="perimeter-bar">
+    <span class="perimeter-label">Perímetro de comparación:</span>
+    <div class="segmented" id="perimeterSeg">
+      <button data-perimeter="CD" class="active">Costos Directos (evitables)</button>
+      <button data-perimeter="CT">Todos los costos directos</button>
+    </div>
+    <span class="perimeter-hint" id="perimeterHint">Tripulación + Operación de ruta + Mantenimiento — excluye Estructura</span>
+  </div>
+</div>
+
+<div class="wrap">
 
   <!-- ============ FLORIDA PANEL ============ -->
   <div class="panel active" id="panel-florida">
@@ -216,6 +241,18 @@
         <div class="row"><span>Costo promedio / salida</span><b id="fl-avg">—</b></div>
       </div>
     </div>
+
+    <section class="tight" style="margin-top:20px;">
+      <h2><span class="idx">00</span>Bus vs. Driver — ¿cuál es el mayor problema?</h2>
+      <p class="section-lead">Del sobrecosto total (lo que pagamos de más frente al presupuesto propio), cuánto es porque faltó un bus disponible y cuánto porque faltó un conductor disponible.</p>
+      <div class="card" style="padding:28px 32px;">
+        <div id="fl-busdriver-bars"></div>
+        <div class="legend-row" style="margin-top:18px;">
+          <div class="legend-item"><span class="swatch" style="background:var(--ink);"></span>Bus</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--alert);"></span>Driver</div>
+        </div>
+      </div>
+    </section>
 
     <div class="route tight"><div class="stop"></div><div class="seg"></div><div class="stop"></div><div class="seg"></div><div class="stop"></div></div>
 
@@ -277,6 +314,18 @@
       </div>
     </div>
 
+    <section class="tight" style="margin-top:20px;">
+      <h2><span class="idx">00</span>Bus vs. Driver — ¿cuál es el mayor problema?</h2>
+      <p class="section-lead">Del sobrecosto total (lo que pagamos de más frente al presupuesto propio), cuánto es porque faltó un bus disponible y cuánto porque faltó un conductor disponible.</p>
+      <div class="card" style="padding:28px 32px;">
+        <div id="tx-busdriver-bars"></div>
+        <div class="legend-row" style="margin-top:18px;">
+          <div class="legend-item"><span class="swatch" style="background:var(--ink);"></span>Bus</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--alert);"></span>Driver</div>
+        </div>
+      </div>
+    </section>
+
     <div class="route tight"><div class="stop"></div><div class="seg"></div><div class="stop"></div><div class="seg"></div><div class="stop"></div></div>
 
     <section class="tight first">
@@ -337,6 +386,18 @@
       </div>
     </div>
 
+    <section class="tight" style="margin-top:20px;">
+      <h2><span class="idx">00</span>Bus vs. Driver — ¿cuál es el mayor problema?</h2>
+      <p class="section-lead">Del sobrecosto total (lo que pagamos de más frente al presupuesto propio), cuánto es porque faltó un bus disponible y cuánto porque faltó un conductor disponible.</p>
+      <div class="card" style="padding:28px 32px;">
+        <div id="co-busdriver-bars"></div>
+        <div class="legend-row" style="margin-top:18px;">
+          <div class="legend-item"><span class="swatch" style="background:var(--ink);"></span>Bus</div>
+          <div class="legend-item"><span class="swatch" style="background:var(--alert);"></span>Driver</div>
+        </div>
+      </div>
+    </section>
+
     <div class="route tight"><div class="stop"></div><div class="seg"></div><div class="stop"></div><div class="seg"></div><div class="stop"></div></div>
 
     <section class="tight first">
@@ -394,18 +455,19 @@
     <section class="tight">
       <h2><span class="idx">05</span>Lectura del análisis</h2>
       <div class="insights">
-        <div class="insight"><div class="tag">Concentración</div><p>El corredor <b>Miami ⇄ Tallahassee</b> (4 códigos de servicio) suma <b>$86,766</b> de sobrecosto — casi dos tercios del total. Es el primer lugar donde vale la pena resolver disponibilidad propia de bus/conductor antes que negociar tarifas de farm out.</p></div>
-        <div class="insight"><div class="tag">Costo por salida</div><p>En promedio, cada salida cubierta por un tercero cuesta <b>58%</b> más que si se hubiera cubierto con recurso propio ($1,573 vs. $995). No es solo volumen: es una diferencia de tarifa por unidad que se repite mes a mes.</p></div>
-        <div class="insight"><div class="tag">Excepción</div><p><b class="g">Junio</b> es el único mes donde la brecha cae a 19.9% — y en Florida específicamente, el real farm out ($45,101) quedó prácticamente igual al presupuesto ($45,448). Vale la pena revisar qué tarifas o proveedores se usaron ese mes para replicarlo.</p></div>
-        <div class="insight"><div class="tag">Texas: menor volumen, mayor severidad</div><p>Con solo 45 salidas (20% del total), Texas concentra variaciones porcentuales más extremas: <b>Houston ⇄ Austin</b> y <b>Austin ⇄ Dallas</b> superan el 140–205% de sobrecosto. Rutas de bajo volumen pero alto riesgo tarifario.</p></div>
-        <div class="insight"><div class="tag">Tendencia</div><p>El sobrecosto no es decreciente: <b>julio</b> cerró con <b>$31,906</b> de variación negativa, el segundo peor mes del período, después de abril. No hay una tendencia clara de mejora mes a mes.</p></div>
-        <div class="insight"><div class="tag">Dato sin asignar</div><p>28 salidas ($10,180 de sobrecosto) no tienen ruta identificada en la base ("sin ruta"), principalmente por códigos de servicio sin cruce en el maestro. Vale la pena depurar esas líneas para no perder trazabilidad.</p></div>
+        <div class="insight"><div class="tag">Concentración</div><p>El corredor <b>Miami ⇄ Tallahassee</b> (4 códigos de servicio) suma <b>$<span id="ins-corridor-var">—</span></b> de sobrecosto — <b><span id="ins-corridor-pct">—</span></b> del total. Es el primer lugar donde vale la pena resolver disponibilidad propia de bus/conductor antes que negociar tarifas de farm out.</p></div>
+        <div class="insight"><div class="tag">Costo por salida</div><p>En promedio, cada salida cubierta por un tercero cuesta <b><span id="ins-diff-pct">—</span></b> más que si se hubiera cubierto con recurso propio ($<span id="ins-real-salida">—</span> vs. $<span id="ins-ppto-salida">—</span>). No es solo volumen: es una diferencia de tarifa por unidad que se repite mes a mes.</p></div>
+        <div class="insight"><div class="tag">Excepción</div><p><b class="g" id="ins-best-month">—</b> es el mes con menor brecha (<span id="ins-best-month-pct">—</span>). Vale la pena revisar qué tarifas o proveedores se usaron ese mes para replicarlo.</p></div>
+        <div class="insight"><div class="tag">Texas: menor volumen, mayor severidad</div><p>Con solo 45 salidas (20% del total), Texas concentra variaciones porcentuales más extremas: <b><span id="ins-tx-route1">—</span></b> (<span id="ins-tx-route1-pct">—</span>) y <b><span id="ins-tx-route2">—</span></b> (<span id="ins-tx-route2-pct">—</span>). Rutas de bajo volumen pero alto riesgo tarifario.</p></div>
+        <div class="insight"><div class="tag">Tendencia</div><p>El sobrecosto no es decreciente: <b id="ins-worst-month">—</b> cerró con <b>$<span id="ins-worst-month-var">—</span></b> de variación negativa, el mes de mayor impacto en dólares del período. No hay una tendencia clara de mejora mes a mes.</p></div>
+        <div class="insight"><div class="tag">Dato sin asignar</div><p><span id="ins-sinruta-salidas">—</span> salidas ($<span id="ins-sinruta-var">—</span> de sobrecosto) no tienen ruta identificada en la base ("sin ruta"), principalmente por códigos de servicio sin cruce en el maestro. Vale la pena depurar esas líneas para no perder trazabilidad.</p></div>
       </div>
     </section>
 
     <section class="tight">
       <h2><span class="idx">06</span>Anexo — Qué considera el presupuesto propio</h2>
-      <p class="section-lead">Desglose de las partidas que componen el "Ppto. propio" (costo directo, 24 líneas) usado como base de comparación en todo este análisis.</p>
+      <p class="section-lead">Desglose de las partidas que componen el "Ppto. propio" usado como base de comparación. <b id="anexo-note">—</b></p>
+      <p class="section-lead" style="margin-top:-10px;"><span class="pct-pill" id="anexo-badge" style="background:var(--alert-soft); color:var(--brand-dark);">—</span></p>
       <div class="annex-grid">
         <div class="annex-card">
           <div class="annex-title">Tripulación / Payroll</div>
@@ -436,11 +498,11 @@
             <li>Shop Supplies &amp; Tools</li>
             <li>Outside Vehicle Maintenance &amp; Third Party repairs</li>
             <li>Replacement Parts</li>
-            <li>Tow Expense</li>
-            <li>Travel expenses to rescue buses</li>
+            <li class="ct-only">Tow Expense</li>
+            <li class="ct-only">Travel expenses to rescue buses</li>
           </ul>
         </div>
-        <div class="annex-card">
+        <div class="annex-card ct-only-card">
           <div class="annex-title">Estructura / otros directos</div>
           <ul class="annex-list">
             <li>Operations</li>
@@ -464,12 +526,16 @@
 <button class="to-top" id="toTop" aria-label="Volver arriba">↑</button>
 
 <script>
-const DATA = {"monthly": [{"Mes": "Enero", "ppto": 25296.622230281337, "real": 44163.01, "salidas": 29, "var": -18866.387769718665, "var_pct": -74.58065981289252}, {"Mes": "Febrero", "ppto": 20232.63595180719, "real": 33060.0, "salidas": 23, "var": -12827.364048192809, "var_pct": -63.399371583350515}, {"Mes": "Marzo", "ppto": 18316.270225632514, "real": 30579.5, "salidas": 17, "var": -12263.229774367486, "var_pct": -66.95265806466338}, {"Mes": "Abril", "ppto": 34653.69582294218, "real": 58346.0, "salidas": 30, "var": -23692.30417705782, "var_pct": -68.36876591204029}, {"Mes": "Mayo", "ppto": 26519.053654443902, "real": 48552.25, "salidas": 29, "var": -22033.196345556098, "var_pct": -83.08439898594914}, {"Mes": "Junio", "ppto": 48549.6364709345, "real": 58201.0, "salidas": 48, "var": -9651.3635290655, "var_pct": -19.879373421968957}, {"Mes": "Julio", "ppto": 52362.69394396676, "real": 84269.0, "salidas": 51, "var": -31906.306056033238, "var_pct": -60.93327835687011}], "monthly_state": [{"Mes": "Abril", "Estado": "Florida", "ppto": 29007.057793068816, "real": 50286.0, "salidas": 24}, {"Mes": "Abril", "Estado": "Texas", "ppto": 5646.638029873366, "real": 8060.0, "salidas": 6}, {"Mes": "Enero", "Estado": "Florida", "ppto": 20318.849308798206, "real": 32650.510000000002, "salidas": 21}, {"Mes": "Enero", "Estado": "Texas", "ppto": 4977.772921483131, "real": 11512.5, "salidas": 8}, {"Mes": "Febrero", "Estado": "Florida", "ppto": 14461.378536005506, "real": 20800.0, "salidas": 13}, {"Mes": "Febrero", "Estado": "Texas", "ppto": 5771.257415801687, "real": 12260.0, "salidas": 10}, {"Mes": "Julio", "Estado": "Florida", "ppto": 49309.70796592744, "real": 74894.0, "salidas": 45}, {"Mes": "Julio", "Estado": "Texas", "ppto": 3052.9859780393226, "real": 9375.0, "salidas": 6}, {"Mes": "Junio", "Estado": "Florida", "ppto": 45448.4325402594, "real": 45101.0, "salidas": 41}, {"Mes": "Junio", "Estado": "Texas", "ppto": 3101.203930675103, "real": 13100.0, "salidas": 7}, {"Mes": "Marzo", "Estado": "Florida", "ppto": 16214.08904909959, "real": 25379.5, "salidas": 14}, {"Mes": "Marzo", "Estado": "Texas", "ppto": 2102.1811765329226, "real": 5200.0, "salidas": 3}, {"Mes": "Mayo", "Estado": "Florida", "ppto": 23200.746425124682, "real": 40272.25, "salidas": 24}, {"Mes": "Mayo", "Estado": "Texas", "ppto": 3318.307229319218, "real": 8280.0, "salidas": 5}], "by_state": [{"Estado": "Florida", "ppto": 197960.26161828364, "real": 289383.26, "salidas": 182, "var": -91422.99838171637, "var_pct": -46.182500282810565}, {"Estado": "Texas", "ppto": 27970.34668172475, "real": 67787.5, "salidas": 45, "var": -39817.15331827525, "var_pct": -142.3548795134919}], "by_route": [{"Nombre Servicio": "Miami - Tallahassee", "Estado": "Florida", "ppto": 91042.34836646813, "real": 136978.39, "salidas": 81, "servicios": [7060, 8022, 8080, 9016, 9036], "var": -45936.04163353189, "var_pct": -50.455686235846954}, {"Nombre Servicio": "Tallahassee - Miami", "Estado": "Florida", "ppto": 81049.76864798287, "real": 121879.87, "salidas": 74, "servicios": [7063, 8023, 8083, 9017, 9037], "var": -40830.101352017125, "var_pct": -50.37657976465215}, {"Nombre Servicio": "Houston - Dallas", "Estado": "Texas", "ppto": 10668.666983874919, "real": 23741.25, "salidas": 14, "servicios": [7118, 9112, 9114, 9144, 9174], "var": -13072.583016125081, "var_pct": -122.53248729090096}, {"Nombre Servicio": "Dallas - Houston", "Estado": "Texas", "ppto": 8514.800168879605, "real": 16041.25, "salidas": 11, "servicios": [7117, 9111, 9113, 9173], "var": -7526.449831120395, "var_pct": -88.39255979991766}, {"Nombre Servicio": "(sin ruta)", "Estado": "Texas", "ppto": 973.2308140601999, "real": 8450.0, "salidas": 5, "servicios": [7172, 7173, 8133, 8187, 8188], "var": -7476.7691859398, "var_pct": -768.2421351567809}, {"Nombre Servicio": "Houston - Austin", "Estado": "Texas", "ppto": 3561.2296920610156, "real": 8902.5, "salidas": 7, "servicios": [7145, 8183, 8185, 8187, 8199], "var": -5341.270307938985, "var_pct": -149.9838755092428}, {"Nombre Servicio": "Austin - Houston", "Estado": "Texas", "ppto": 2939.3882031264593, "real": 7002.5, "salidas": 6, "servicios": [7144, 8182, 8184, 8186, 8188], "var": -4063.1117968735407, "var_pct": -138.2298463521028}, {"Nombre Servicio": "(sin ruta)", "Estado": "Florida", "ppto": 23271.656794260947, "real": 25975.0, "salidas": 23, "servicios": [7000, 7001, 7060, 7063, 9037], "var": -2703.343205739053, "var_pct": -11.616462160982573}, {"Nombre Servicio": "Austin - Dallas", "Estado": "Texas", "ppto": 605.9284369966163, "real": 1850.0, "salidas": 1, "servicios": [8130], "var": -1244.0715630033837, "var_pct": -205.3165831215694}, {"Nombre Servicio": "Tampa - Miami", "Estado": "Florida", "ppto": 1305.8751547858415, "real": 2400.0, "salidas": 2, "servicios": [7037, 8031], "var": -1094.1248452141585, "var_pct": -83.78479682413369}, {"Nombre Servicio": "Dallas  - TAMU", "Estado": "Texas", "ppto": 707.102382725935, "real": 1800.0, "salidas": 1, "servicios": [8155], "var": -1092.897617274065, "var_pct": -154.56002468282728}, {"Nombre Servicio": "Miami - Tampa", "Estado": "Florida", "ppto": 1290.6126547858407, "real": 2150.0, "salidas": 2, "servicios": [7038], "var": -859.3873452141593, "var_pct": -66.58754987620686}], "totals": {"ppto": 225930.6083000084, "real": 357170.76, "var": -131240.1516999916, "var_pct": -58.08869930794, "salidas": 227, "n_servicios": 39, "n_filas": 100}};
+const DATA_CD = {"monthly": [{"Mes": "Enero", "ppto": 23588.05247601713, "real": 44163.009999999995, "salidas": 29, "costo_bus": 40463.009999999995, "costo_driver": 3700, "salidas_bus": 27, "salidas_driver": 2, "var": -20574.957523982866, "var_pct": -87.22618174985921}, {"Mes": "Febrero", "ppto": 16253.155955933724, "real": 33060, "salidas": 23, "costo_bus": 3440, "costo_driver": 29620, "salidas_bus": 3, "salidas_driver": 20, "var": -16806.844044066274, "var_pct": -103.40664969704181}, {"Mes": "Marzo", "ppto": 15001.029635825287, "real": 30579.5, "salidas": 17, "costo_bus": 12811.5, "costo_driver": 17768, "salidas_bus": 7, "salidas_driver": 10, "var": -15578.470364174713, "var_pct": -103.84934062772857}, {"Mes": "Abril", "ppto": 28363.84203524752, "real": 58346, "salidas": 30, "costo_bus": 7884, "costo_driver": 50462, "salidas_bus": 4, "salidas_driver": 26, "var": -29982.15796475248, "var_pct": -105.70555966111324}, {"Mes": "Mayo", "ppto": 25375.73302158884, "real": 48552.25, "salidas": 29, "costo_bus": 3400, "costo_driver": 45152.25, "salidas_bus": 2, "salidas_driver": 27, "var": -23176.51697841116, "var_pct": -91.33338910325601}, {"Mes": "Junio", "ppto": 39921.40726979143, "real": 58201, "salidas": 48, "costo_bus": 13100, "costo_driver": 45101, "salidas_bus": 7, "salidas_driver": 41, "var": -18279.59273020857, "var_pct": -45.788948787987124}, {"Mes": "Julio", "ppto": 43491.51205919397, "real": 84269.0, "salidas": 51, "costo_bus": 5725.0, "costo_driver": 78544, "salidas_bus": 4, "salidas_driver": 47, "var": -40777.48794080603, "var_pct": -93.75964644619845}], "monthly_state": [{"Mes": "Enero", "Estado": "Florida", "ppto": 19917.40716626677, "real": 32650.51, "salidas": 21, "costo_bus": 32650.51, "costo_driver": 0}, {"Mes": "Enero", "Estado": "Texas", "ppto": 3670.64530975036, "real": 11512.5, "salidas": 8, "costo_bus": 7812.5, "costo_driver": 3700}, {"Mes": "Febrero", "Estado": "Florida", "ppto": 11974.307264416617, "real": 20800, "salidas": 13, "costo_bus": 0, "costo_driver": 20800}, {"Mes": "Febrero", "Estado": "Texas", "ppto": 4278.848691517105, "real": 12260, "salidas": 10, "costo_bus": 3440, "costo_driver": 8820}, {"Mes": "Marzo", "Estado": "Florida", "ppto": 13486.889774014795, "real": 25379.5, "salidas": 14, "costo_bus": 7611.5, "costo_driver": 17768}, {"Mes": "Marzo", "Estado": "Texas", "ppto": 1514.1398618104927, "real": 5200, "salidas": 3, "costo_bus": 5200, "costo_driver": 0}, {"Mes": "Abril", "Estado": "Florida", "ppto": 24264.51700947228, "real": 50286, "salidas": 24, "costo_bus": 5284, "costo_driver": 45002}, {"Mes": "Abril", "Estado": "Texas", "ppto": 4099.325025775238, "real": 8060, "salidas": 6, "costo_bus": 2600, "costo_driver": 5460}, {"Mes": "Mayo", "Estado": "Florida", "ppto": 22976.406115213624, "real": 40272.25, "salidas": 24, "costo_bus": 3400, "costo_driver": 36872.25}, {"Mes": "Mayo", "Estado": "Texas", "ppto": 2399.326906375217, "real": 8280, "salidas": 5, "costo_bus": 0, "costo_driver": 8280}, {"Mes": "Junio", "Estado": "Florida", "ppto": 37664.239636347185, "real": 45101, "salidas": 41, "costo_bus": 0, "costo_driver": 45101}, {"Mes": "Junio", "Estado": "Texas", "ppto": 2257.1676334442536, "real": 13100, "salidas": 7, "costo_bus": 13100, "costo_driver": 0}, {"Mes": "Julio", "Estado": "Florida", "ppto": 41258.22655409985, "real": 74894, "salidas": 45, "costo_bus": 3850, "costo_driver": 71044}, {"Mes": "Julio", "Estado": "Texas", "ppto": 2233.2855050941084, "real": 9375.0, "salidas": 6, "costo_bus": 1875.0, "costo_driver": 7500}], "by_state": [{"Estado": "Florida", "ppto": 171541.99351983116, "real": 289383.26, "salidas": 182, "costo_bus": 52796.009999999995, "costo_driver": 236587.25, "salidas_bus": 31, "salidas_driver": 151, "var": -117841.26648016885, "var_pct": -68.69528799462493, "sobrecosto_bus": 22629.19532352571, "sobrecosto_driver": 95212.07115664317}, {"Estado": "Texas", "ppto": 20452.738933766774, "real": 67787.5, "salidas": 45, "costo_bus": 34027.5, "costo_driver": 33760, "salidas_bus": 23, "salidas_driver": 22, "var": -47334.76106623323, "var_pct": -231.43482747968366, "sobrecosto_bus": 23560.680104702245, "sobrecosto_driver": 23774.080961530984}], "by_route": [{"Nombre Servicio": "Miami - Tallahassee", "Estado": "Florida", "ppto": 87806.07278941844, "real": 148128.39, "salidas": 91, "servicios": [7060, 8022, 8080, 9016, 9036], "costo_bus": 30431.14, "costo_driver": 117697.25, "salidas_bus": 17, "salidas_driver": 74, "var": -60322.317210581576, "var_pct": -68.69948204522257}, {"Nombre Servicio": "Tallahassee - Miami", "Estado": "Florida", "ppto": 81603.73346049806, "real": 134954.87, "salidas": 85, "servicios": [7063, 8023, 8083, 9017, 9037], "costo_bus": 20814.87, "costo_driver": 114140, "salidas_bus": 12, "salidas_driver": 73, "var": -53351.13653950194, "var_pct": -65.37830351270341}, {"Nombre Servicio": "Houston - Dallas", "Estado": "Texas", "ppto": 7702.018422243689, "real": 23741.25, "salidas": 14, "servicios": [7118, 9112, 9114, 9144, 9174], "costo_bus": 10831.25, "costo_driver": 12910, "salidas_bus": 6, "salidas_driver": 8, "var": -16039.23157775631, "var_pct": -208.2471204098197}, {"Nombre Servicio": "Dallas - Houston", "Estado": "Texas", "ppto": 6150.631965529309, "real": 16041.25, "salidas": 11, "servicios": [7117, 9111, 9113, 9173], "costo_bus": 5531.25, "costo_driver": 10510, "salidas_bus": 4, "salidas_driver": 7, "var": -9890.618034470692, "var_pct": -160.80653321320176}, {"Nombre Servicio": "Houston - Austin", "Estado": "Texas", "ppto": 3045.1296014382488, "real": 10302.5, "salidas": 8, "servicios": [7145, 8183, 8185, 8187, 8199], "costo_bus": 8082.5, "costo_driver": 2220, "salidas_bus": 6, "salidas_driver": 2, "var": -7257.370398561751, "var_pct": -238.3271436175989}, {"Nombre Servicio": "Austin - Houston", "Estado": "Texas", "ppto": 2548.0202241164816, "real": 8402.5, "salidas": 7, "servicios": [7144, 8182, 8184, 8186, 8188], "costo_bus": 3982.5, "costo_driver": 4420, "salidas_bus": 4, "salidas_driver": 3, "var": -5854.479775883518, "var_pct": -229.7658284056023}, {"Nombre Servicio": "(sin ruta)", "Estado": "Texas", "ppto": 0, "real": 5650, "salidas": 3, "servicios": [7172, 7173, 8133], "costo_bus": 3800, "costo_driver": 1850, "salidas_bus": 2, "salidas_driver": 1, "var": -5650, "var_pct": null}, {"Nombre Servicio": "(sin ruta)", "Estado": "Florida", "ppto": 0, "real": 1750, "salidas": 2, "servicios": [7000, 7001], "costo_bus": 0, "costo_driver": 1750, "salidas_bus": 0, "salidas_driver": 2, "var": -1750, "var_pct": null}, {"Nombre Servicio": "Austin - Dallas", "Estado": "Texas", "ppto": 444.58925165998886, "real": 1850, "salidas": 1, "servicios": [8130], "costo_bus": 0, "costo_driver": 1850, "salidas_bus": 0, "salidas_driver": 1, "var": -1405.4107483400112, "var_pct": -316.1144231653255}, {"Nombre Servicio": "Tampa - Miami", "Estado": "Florida", "ppto": 1073.724884957313, "real": 2400, "salidas": 2, "servicios": [7037, 8031], "costo_bus": 900, "costo_driver": 1500, "salidas_bus": 1, "salidas_driver": 1, "var": -1326.275115042687, "var_pct": -123.52094410994437}, {"Nombre Servicio": "Dallas  - TAMU", "Estado": "Texas", "ppto": 562.3494687790553, "real": 1800, "salidas": 1, "servicios": [8155], "costo_bus": 1800, "costo_driver": 0, "salidas_bus": 1, "salidas_driver": 0, "var": -1237.6505312209447, "var_pct": -220.08565846217812}, {"Nombre Servicio": "Miami - Tampa", "Estado": "Florida", "ppto": 1058.4623849573134, "real": 2150, "salidas": 2, "servicios": [7038], "costo_bus": 650, "costo_driver": 1500, "salidas_bus": 1, "salidas_driver": 1, "var": -1091.5376150426866, "var_pct": -103.1248375526077}], "totals": {"ppto": 191994.7324535979, "real": 357170.76, "salidas": 227, "n_servicios": 39, "n_filas": 100, "var": -165176.0275464021, "var_pct": -86.03154130091696, "costo_bus": 86823.51, "costo_driver": 270347.25, "salidas_bus": 54, "salidas_driver": 173, "pct_bus": 24.308683611166828, "pct_driver": 75.69131638883317, "sobrecosto_bus": 46189.875428227955, "sobrecosto_driver": 118986.15211817416, "sobrecosto_bus_pct": 27.964030927703508, "sobrecosto_driver_pct": 72.03596907229648}};
+const DATA_CT = {"monthly": [{"Mes": "Enero", "ppto": 28850.11637034864, "real": 44163.009999999995, "salidas": 29, "costo_bus": 40463.009999999995, "costo_driver": 3700, "salidas_bus": 27, "salidas_driver": 2, "var": -15312.893629651353, "var_pct": -53.07740680515772}, {"Mes": "Febrero", "ppto": 20232.63595180719, "real": 33060, "salidas": 23, "costo_bus": 3440, "costo_driver": 29620, "salidas_bus": 3, "salidas_driver": 20, "var": -12827.364048192809, "var_pct": -63.399371583350515}, {"Mes": "Marzo", "ppto": 18316.27022563251, "real": 30579.5, "salidas": 17, "costo_bus": 12811.5, "costo_driver": 17768, "salidas_bus": 7, "salidas_driver": 10, "var": -12263.22977436749, "var_pct": -66.95265806466341}, {"Mes": "Abril", "ppto": 34653.69582294218, "real": 58346, "salidas": 30, "costo_bus": 7884, "costo_driver": 50462, "salidas_bus": 4, "salidas_driver": 26, "var": -23692.30417705782, "var_pct": -68.36876591204029}, {"Mes": "Mayo", "ppto": 30912.64155521375, "real": 48552.25, "salidas": 29, "costo_bus": 3400, "costo_driver": 45152.25, "salidas_bus": 2, "salidas_driver": 27, "var": -17639.60844478625, "var_pct": -57.06276641962077}, {"Mes": "Junio", "ppto": 48549.63647093451, "real": 58201, "salidas": 48, "costo_bus": 13100, "costo_driver": 45101, "salidas_bus": 7, "salidas_driver": 41, "var": -9651.363529065493, "var_pct": -19.87937342196894}, {"Mes": "Julio", "ppto": 52362.69394396678, "real": 84269.0, "salidas": 51, "costo_bus": 5725.0, "costo_driver": 78544, "salidas_bus": 4, "salidas_driver": 47, "var": -31906.306056033223, "var_pct": -60.93327835687007}], "monthly_state": [{"Mes": "Enero", "Estado": "Florida", "ppto": 23872.343448865508, "real": 32650.51, "salidas": 21, "costo_bus": 32650.51, "costo_driver": 0}, {"Mes": "Enero", "Estado": "Texas", "ppto": 4977.772921483131, "real": 11512.5, "salidas": 8, "costo_bus": 7812.5, "costo_driver": 3700}, {"Mes": "Febrero", "Estado": "Florida", "ppto": 14461.378536005504, "real": 20800, "salidas": 13, "costo_bus": 0, "costo_driver": 20800}, {"Mes": "Febrero", "Estado": "Texas", "ppto": 5771.257415801687, "real": 12260, "salidas": 10, "costo_bus": 3440, "costo_driver": 8820}, {"Mes": "Marzo", "Estado": "Florida", "ppto": 16214.08904909959, "real": 25379.5, "salidas": 14, "costo_bus": 7611.5, "costo_driver": 17768}, {"Mes": "Marzo", "Estado": "Texas", "ppto": 2102.1811765329226, "real": 5200, "salidas": 3, "costo_bus": 5200, "costo_driver": 0}, {"Mes": "Abril", "Estado": "Florida", "ppto": 29007.057793068816, "real": 50286, "salidas": 24, "costo_bus": 5284, "costo_driver": 45002}, {"Mes": "Abril", "Estado": "Texas", "ppto": 5646.638029873366, "real": 8060, "salidas": 6, "costo_bus": 2600, "costo_driver": 5460}, {"Mes": "Mayo", "Estado": "Florida", "ppto": 27594.33432589453, "real": 40272.25, "salidas": 24, "costo_bus": 3400, "costo_driver": 36872.25}, {"Mes": "Mayo", "Estado": "Texas", "ppto": 3318.307229319218, "real": 8280, "salidas": 5, "costo_bus": 0, "costo_driver": 8280}, {"Mes": "Junio", "Estado": "Florida", "ppto": 45448.432540259404, "real": 45101, "salidas": 41, "costo_bus": 0, "costo_driver": 45101}, {"Mes": "Junio", "Estado": "Texas", "ppto": 3101.203930675103, "real": 13100, "salidas": 7, "costo_bus": 13100, "costo_driver": 0}, {"Mes": "Julio", "Estado": "Florida", "ppto": 49309.707965927446, "real": 74894, "salidas": 45, "costo_bus": 3850, "costo_driver": 71044}, {"Mes": "Julio", "Estado": "Texas", "ppto": 3052.985978039322, "real": 9375.0, "salidas": 6, "costo_bus": 1875.0, "costo_driver": 7500}], "by_state": [{"Estado": "Florida", "ppto": 205907.34365912082, "real": 289383.26, "salidas": 182, "costo_bus": 52796.009999999995, "costo_driver": 236587.25, "salidas_bus": 31, "salidas_driver": 151, "var": -83475.9163408792, "var_pct": -40.54052412966553, "sobrecosto_bus": 16694.43636944911, "sobrecosto_driver": 66781.4799714301}, {"Estado": "Texas", "ppto": 27970.346681724746, "real": 67787.5, "salidas": 45, "costo_bus": 34027.5, "costo_driver": 33760, "salidas_bus": 23, "salidas_driver": 22, "var": -39817.153318275254, "var_pct": -142.35487951349194, "sobrecosto_bus": 19826.924268440387, "sobrecosto_driver": 19990.229049834863}], "by_route": [{"Nombre Servicio": "Miami - Tallahassee", "Estado": "Florida", "ppto": 105355.16195143334, "real": 148128.39, "salidas": 91, "servicios": [7060, 8022, 8080, 9016, 9036], "costo_bus": 30431.14, "costo_driver": 117697.25, "salidas_bus": 17, "salidas_driver": 74, "var": -42773.22804856667, "var_pct": -40.59908148428863}, {"Nombre Servicio": "Tallahassee - Miami", "Estado": "Florida", "ppto": 97955.69389811576, "real": 134954.87, "salidas": 85, "servicios": [7063, 8023, 8083, 9017, 9037], "costo_bus": 20814.87, "costo_driver": 114140, "salidas_bus": 12, "salidas_driver": 73, "var": -36999.17610188424, "var_pct": -37.77133786665559}, {"Nombre Servicio": "Houston - Dallas", "Estado": "Texas", "ppto": 10668.666983874917, "real": 23741.25, "salidas": 14, "servicios": [7118, 9112, 9114, 9144, 9174], "costo_bus": 10831.25, "costo_driver": 12910, "salidas_bus": 6, "salidas_driver": 8, "var": -13072.583016125083, "var_pct": -122.532487290901}, {"Nombre Servicio": "Dallas - Houston", "Estado": "Texas", "ppto": 8514.800168879605, "real": 16041.25, "salidas": 11, "servicios": [7117, 9111, 9113, 9173], "costo_bus": 5531.25, "costo_driver": 10510, "salidas_bus": 4, "salidas_driver": 7, "var": -7526.449831120395, "var_pct": -88.39255979991766}, {"Nombre Servicio": "Houston - Austin", "Estado": "Texas", "ppto": 4047.8450990911156, "real": 10302.5, "salidas": 8, "servicios": [7145, 8183, 8185, 8187, 8199], "costo_bus": 8082.5, "costo_driver": 2220, "salidas_bus": 6, "salidas_driver": 2, "var": -6254.654900908885, "var_pct": -154.51813860943633}, {"Nombre Servicio": "(sin ruta)", "Estado": "Texas", "ppto": 0, "real": 5650, "salidas": 3, "servicios": [7172, 7173, 8133], "costo_bus": 3800, "costo_driver": 1850, "salidas_bus": 2, "salidas_driver": 1, "var": -5650, "var_pct": null}, {"Nombre Servicio": "Austin - Houston", "Estado": "Texas", "ppto": 3426.003610156559, "real": 8402.5, "salidas": 7, "servicios": [7144, 8182, 8184, 8186, 8188], "costo_bus": 3982.5, "costo_driver": 4420, "salidas_bus": 4, "salidas_driver": 3, "var": -4976.496389843442, "var_pct": -145.2566008713584}, {"Nombre Servicio": "(sin ruta)", "Estado": "Florida", "ppto": 0, "real": 1750, "salidas": 2, "servicios": [7000, 7001], "costo_bus": 0, "costo_driver": 1750, "salidas_bus": 0, "salidas_driver": 2, "var": -1750, "var_pct": null}, {"Nombre Servicio": "Austin - Dallas", "Estado": "Texas", "ppto": 605.9284369966163, "real": 1850, "salidas": 1, "servicios": [8130], "costo_bus": 0, "costo_driver": 1850, "salidas_bus": 0, "salidas_driver": 1, "var": -1244.0715630033837, "var_pct": -205.3165831215694}, {"Nombre Servicio": "Tampa - Miami", "Estado": "Florida", "ppto": 1305.8751547858415, "real": 2400, "salidas": 2, "servicios": [7037, 8031], "costo_bus": 900, "costo_driver": 1500, "salidas_bus": 1, "salidas_driver": 1, "var": -1094.1248452141585, "var_pct": -83.78479682413369}, {"Nombre Servicio": "Dallas  - TAMU", "Estado": "Texas", "ppto": 707.102382725935, "real": 1800, "salidas": 1, "servicios": [8155], "costo_bus": 1800, "costo_driver": 0, "salidas_bus": 1, "salidas_driver": 0, "var": -1092.897617274065, "var_pct": -154.56002468282728}, {"Nombre Servicio": "Miami - Tampa", "Estado": "Florida", "ppto": 1290.6126547858407, "real": 2150, "salidas": 2, "servicios": [7038], "costo_bus": 650, "costo_driver": 1500, "salidas_bus": 1, "salidas_driver": 1, "var": -859.3873452141593, "var_pct": -66.58754987620686}], "totals": {"ppto": 233877.69034084553, "real": 357170.76, "salidas": 227, "n_servicios": 39, "n_filas": 100, "var": -123293.06965915448, "var_pct": -52.71690064985305, "costo_bus": 86823.51, "costo_driver": 270347.25, "salidas_bus": 54, "salidas_driver": 173, "pct_bus": 24.308683611166828, "pct_driver": 75.69131638883317, "sobrecosto_bus": 36521.3606378895, "sobrecosto_driver": 86771.70902126496, "sobrecosto_bus_pct": 29.621584359001968, "sobrecosto_driver_pct": 70.37841564099804}};
+const INSIGHTS = {"CD": {"corridor_var": 113673, "corridor_pct": 67.1, "ppto_x_salida": 846, "real_x_salida": 1573, "diff_pct": 86.0, "best_month": "Junio", "best_month_pct": 45.8, "worst_month": "Julio", "worst_month_var": 40777, "tx_route1": "Austin - Dallas", "tx_route1_pct": 316, "tx_route2": "Houston - Austin", "tx_route2_pct": 238, "sin_ruta_salidas": 5, "sin_ruta_var": 7400, "fl_var_pct": 68.7, "tx_var_pct": 231.4, "total_var": 165176, "total_var_pct": 86.0, "bus_cost": 86824, "driver_cost": 270347, "bus_pct": 24.3, "driver_pct": 75.7, "fl_bus_pct": 18.2, "fl_driver_pct": 81.8, "tx_bus_pct": 50.2, "tx_driver_pct": 49.8}, "CT": {"corridor_var": 79772, "corridor_pct": 39.2, "ppto_x_salida": 1030, "real_x_salida": 1573, "diff_pct": 52.7, "best_month": "Junio", "best_month_pct": 19.9, "worst_month": "Julio", "worst_month_var": 31906, "tx_route1": "Austin - Dallas", "tx_route1_pct": 205, "tx_route2": "Dallas  - TAMU", "tx_route2_pct": 155, "sin_ruta_salidas": 5, "sin_ruta_var": 7400, "fl_var_pct": 40.5, "tx_var_pct": 142.4, "total_var": 123293, "total_var_pct": 52.7, "bus_cost": 86824, "driver_cost": 270347, "bus_pct": 24.3, "driver_pct": 75.7, "fl_bus_pct": 18.2, "fl_driver_pct": 81.8, "tx_bus_pct": 50.2, "tx_driver_pct": 49.8}};
+let PERIMETER = 'CD';
+let DATA = DATA_CD;
 
 const MONTH_ORDER = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio"];
 const fmtMoney = n => '$' + Math.round(Math.abs(n)).toLocaleString('en-US');
 const fmtMoney2 = n => '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
-const fmtPct = n => (n>=0?'+':'') + n.toFixed(1) + '%';
+const fmtPct = n => (n===null || n===undefined) ? 'N/A' : (n>=0?'+':'') + n.toFixed(1) + '%';
 
 /* ---------------- SVG chart helper (no external libs) ---------------- */
 const SVGNS = 'http://www.w3.org/2000/svg';
@@ -565,7 +631,7 @@ function getRoutesForState(estado){
     });
     return Object.values(map).map(r=>({
       "Nombre Servicio": r["Nombre Servicio"], ppto:r.ppto, real:r.real, salidas:r.salidas,
-      var: r.ppto-r.real, var_pct: (r.ppto-r.real)/r.ppto*100, estados: Array.from(r.estados),
+      var: r.ppto-r.real, var_pct: r.ppto ? (r.ppto-r.real)/r.ppto*100 : null, estados: Array.from(r.estados),
       servicios: Array.from(r.servicios).sort((a,b)=>a-b)
     }));
   }
@@ -575,6 +641,38 @@ function getHeroForState(estado){
   if(estado==='Consolidado') return DATA.totals;
   const s = DATA.by_state.find(x=>x.Estado===estado);
   return {ppto:s.ppto, real:s.real, var:s.var, var_pct:s.var_pct, salidas:s.salidas};
+}
+
+/* ---------------- Bus vs Driver ---------------- */
+function renderBusDriver(prefix, estado){
+  const hero = estado==='Consolidado' ? DATA.totals : DATA.by_state.find(x=>x.Estado===estado);
+  const bus = hero.sobrecosto_bus, driver = hero.sobrecosto_driver;
+  const total = bus + driver;
+  const busPct = total ? (bus/total*100) : 0;
+  const driverPct = total ? (driver/total*100) : 0;
+  const salidasBus = hero.salidas_bus, salidasDriver = hero.salidas_driver;
+  const holder = document.getElementById(prefix+'-busdriver-bars');
+  if(!holder) return;
+  holder.innerHTML = `
+    <div style="display:grid; grid-template-columns:110px 1fr 130px; gap:14px; align-items:center; margin-bottom:14px;">
+      <div style="font-family:var(--font-mono); font-size:13px; font-weight:700;">BUS</div>
+      <div style="background:var(--paper2,#f2f2f0); border-radius:3px; height:28px; position:relative; overflow:hidden;">
+        <div style="background:var(--ink); height:100%; width:${busPct}%; border-radius:3px;"></div>
+      </div>
+      <div style="font-family:var(--font-mono); font-size:14px; font-weight:700; text-align:right;">${fmtMoney2(bus)} <span style="color:var(--ink-soft); font-weight:400;">(${busPct.toFixed(0)}%)</span></div>
+    </div>
+    <div style="display:grid; grid-template-columns:110px 1fr 130px; gap:14px; align-items:center;">
+      <div style="font-family:var(--font-mono); font-size:13px; font-weight:700; color:var(--alert);">DRIVER</div>
+      <div style="background:var(--paper2,#f2f2f0); border-radius:3px; height:28px; position:relative; overflow:hidden;">
+        <div style="background:var(--alert); height:100%; width:${driverPct}%; border-radius:3px;"></div>
+      </div>
+      <div style="font-family:var(--font-mono); font-size:14px; font-weight:700; text-align:right; color:var(--alert);">${fmtMoney2(driver)} <span style="color:var(--ink-soft); font-weight:400;">(${driverPct.toFixed(0)}%)</span></div>
+    </div>
+    <p style="margin-top:18px; font-size:13px; color:var(--ink-soft); line-height:1.6;">
+      Del <b>sobrecosto</b> de ${fmtMoney2(total)} en ${estado==='Consolidado'?'el consolidado':estado} (Ppto propio − Real farm out), <b style="color:${driverPct>busPct?'var(--alert)':'var(--ink)'};">${driverPct>busPct?'Driver':'Bus'} explica el ${Math.max(busPct,driverPct).toFixed(0)}%</b>.
+      El presupuesto propio se prorrateó según cuántas salidas de cada causa hubo en cada servicio y mes.
+      Salidas por falta de bus: <b>${salidasBus}</b> · Salidas por falta de driver: <b>${salidasDriver}</b>.
+    </p>`;
 }
 
 /* ---------------- top 10 ranking ---------------- */
@@ -643,7 +741,7 @@ function renderTableRows(tbodyId, rows, showTag){
 
 function attachSort(stateKey, theadEl, tbodyId, showTag){
   theadEl.querySelectorAll('th[data-key]').forEach(th=>{
-    th.addEventListener('click', ()=>{
+    th.onclick = () => {
       const key = th.dataset.key;
       const ss = sortStates[stateKey];
       if(ss.key===key){ ss.dir = ss.dir==='asc' ? 'desc' : 'asc'; } else { ss.key = key; ss.dir = 'asc'; }
@@ -651,7 +749,7 @@ function attachSort(stateKey, theadEl, tbodyId, showTag){
       th.classList.add('sorted');
       th.querySelector('.arrow').textContent = ss.dir==='asc' ? '↑' : '↓';
       renderTableRows(tbodyId, sortRoutes(routeCache[stateKey], ss), showTag);
-    });
+    };
   });
 }
 
@@ -675,6 +773,7 @@ function initPanel(prefix, stateKey, estadoLabel, showTag){
   }
 
   renderMonthlyChart(document.getElementById(prefix+'-monthly-chart'), getMonthlyForState(estadoLabel));
+  renderBusDriver(prefix, estadoLabel);
 
   const routes = getRoutesForState(estadoLabel);
   routeCache[stateKey] = routes;
@@ -688,6 +787,66 @@ function initPanel(prefix, stateKey, estadoLabel, showTag){
 initPanel('fl', 'florida', 'Florida', false);
 initPanel('tx', 'texas', 'Texas', false);
 initPanel('co', 'consolidado', 'Consolidado', true);
+
+/* ---------------- insights (dynamic per perímetro) ---------------- */
+function renderInsights(){
+  const ins = INSIGHTS[PERIMETER];
+  const set = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  set('ins-corridor-var', ins.corridor_var.toLocaleString('en-US'));
+  set('ins-corridor-pct', ins.corridor_pct.toFixed(1)+'%');
+  set('ins-diff-pct', ins.diff_pct.toFixed(1)+'%');
+  set('ins-real-salida', ins.real_x_salida.toLocaleString('en-US'));
+  set('ins-ppto-salida', ins.ppto_x_salida.toLocaleString('en-US'));
+  set('ins-best-month', ins.best_month);
+  set('ins-best-month-pct', ins.best_month_pct.toFixed(1)+'%');
+  set('ins-tx-route1', ins.tx_route1);
+  set('ins-tx-route1-pct', '−'+ins.tx_route1_pct+'%');
+  set('ins-tx-route2', ins.tx_route2);
+  set('ins-tx-route2-pct', '−'+ins.tx_route2_pct+'%');
+  set('ins-worst-month', ins.worst_month);
+  set('ins-worst-month-var', ins.worst_month_var.toLocaleString('en-US'));
+  set('ins-sinruta-salidas', ins.sin_ruta_salidas);
+  set('ins-sinruta-var', ins.sin_ruta_var.toLocaleString('en-US'));
+}
+
+/* ---------------- anexo state (dynamic per perímetro) ---------------- */
+function renderAnexoState(){
+  const isCD = PERIMETER === 'CD';
+  document.querySelectorAll('.ct-only').forEach(el => el.classList.toggle('excluded', isCD));
+  document.querySelectorAll('.ct-only-card').forEach(el => el.classList.toggle('excluded', isCD));
+  const note = document.getElementById('anexo-note');
+  const badge = document.getElementById('anexo-badge');
+  if(isCD){
+    note.textContent = 'Este perímetro (Costos Directos) excluye Estructura, Tow Expense, Travel expenses to rescue buses y Costo Farm Out — las líneas tachadas abajo no se están comparando.';
+    badge.textContent = 'Viendo: Costos Directos (evitables)';
+  } else {
+    note.textContent = 'Este perímetro (Todos los costos) incluye todas las líneas del servicio propio, incluida Estructura.';
+    badge.textContent = 'Viendo: Todos los costos directos';
+  }
+}
+
+/* ---------------- perimeter toggle ---------------- */
+document.getElementById('perimeterSeg').addEventListener('click', e=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  const perimeter = btn.dataset.perimeter;
+  if(perimeter === PERIMETER) return;
+  PERIMETER = perimeter;
+  DATA = perimeter === 'CD' ? DATA_CD : DATA_CT;
+  document.querySelectorAll('#perimeterSeg button').forEach(b=>b.classList.toggle('active', b===btn));
+  document.getElementById('perimeterHint').textContent = perimeter === 'CD'
+    ? 'Tripulación + Operación de ruta + Mantenimiento — excluye Estructura'
+    : 'Todas las líneas del servicio propio, incluida Estructura';
+  initPanel('fl', 'florida', 'Florida', false);
+  initPanel('tx', 'texas', 'Texas', false);
+  initPanel('co', 'consolidado', 'Consolidado', true);
+  renderInsights();
+  renderAnexoState();
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+renderInsights();
+renderAnexoState();
 
 /* ---------------- tab switching ---------------- */
 document.getElementById('tabbar').addEventListener('click', e=>{
