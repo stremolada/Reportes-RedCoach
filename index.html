@@ -5,138 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Reportes RedCoach</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f5f6f8;
-      color: #1f2937;
-      min-height: 100vh;
-    }
-
-    .header {
-      background: #111827;
-      color: white;
-      padding: 34px 24px;
-      text-align: center;
-    }
-
-    .header h1 {
-      font-size: 30px;
-      margin-bottom: 8px;
-      letter-spacing: 0.3px;
-    }
-
-    .header p {
-      font-size: 15px;
-      color: #d1d5db;
-    }
-
-    .accent {
-      width: 70px;
-      height: 4px;
-      background: #c81e1e;
-      margin: 18px auto 0;
-      border-radius: 10px;
-    }
-
-    .container {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 48px 24px 60px;
-    }
-
-    .section-title {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .section-title h2 {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
-
-    .section-title p {
-      color: #6b7280;
-      font-size: 14px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 22px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 28px 24px;
-      text-decoration: none;
-      color: inherit;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.07);
-      border: 1px solid #e5e7eb;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      min-height: 190px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 28px rgba(0,0,0,0.12);
-    }
-
-    .card-number {
-      font-size: 13px;
-      font-weight: bold;
-      color: #c81e1e;
-      margin-bottom: 18px;
-      letter-spacing: 0.8px;
-    }
-
-    .card h3 {
-      font-size: 20px;
-      margin-bottom: 10px;
-      line-height: 1.25;
-    }
-
-    .card p {
-      color: #6b7280;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
-    .card-link {
-      margin-top: 22px;
-      font-size: 14px;
-      font-weight: bold;
-      color: #c81e1e;
-    }
-
-    .footer {
-      text-align: center;
-      color: #9ca3af;
-      font-size: 12px;
-      padding: 22px;
-    }
-
-    @media (max-width: 800px) {
-      .cards {
-        grid-template-columns: 1fr;
-      }
-
-      .header h1 {
-        font-size: 25px;
-      }
-    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,Helvetica,sans-serif;background:#f5f6f8;color:#1f2937;min-height:100vh}
+    .header{background:#111827;color:#fff;padding:34px 24px;text-align:center}
+    .header h1{font-size:30px;margin-bottom:8px}
+    .header p{font-size:15px;color:#d1d5db}
+    .accent{width:70px;height:4px;background:#c81e1e;margin:18px auto 0;border-radius:10px}
+    .container{max-width:980px;margin:0 auto;padding:48px 24px 60px}
+    .section-title{text-align:center;margin-bottom:32px}
+    .section-title h2{font-size:24px;margin-bottom:8px}
+    .section-title p{color:#6b7280;font-size:14px}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+    .card{background:#fff;border-radius:16px;padding:28px 24px;text-decoration:none;color:inherit;box-shadow:0 6px 20px rgba(0,0,0,.07);border:1px solid #e5e7eb;transition:.2s;min-height:190px;display:flex;flex-direction:column;justify-content:space-between}
+    .card:hover{transform:translateY(-5px);box-shadow:0 12px 28px rgba(0,0,0,.12)}
+    .card-number{font-size:13px;font-weight:bold;color:#c81e1e;margin-bottom:18px;letter-spacing:.8px}
+    .card h3{font-size:20px;margin-bottom:10px;line-height:1.25}
+    .card p{color:#6b7280;font-size:14px;line-height:1.5}
+    .card-link{margin-top:22px;font-size:14px;font-weight:bold;color:#c81e1e}
+    .footer{text-align:center;color:#9ca3af;font-size:12px;padding:22px}
+    @media(max-width:800px){.cards{grid-template-columns:1fr}.header h1{font-size:25px}}
   </style>
 </head>
-
 <body>
   <header class="header">
     <h1>Reportes RedCoach</h1>
@@ -169,11 +58,11 @@
         <div class="card-link">Ver análisis →</div>
       </a>
 
-      <a class="card" href="costo-por-servicio.html">
+      <a class="card" href="analisis_costos.html">
         <div>
           <div class="card-number">ANÁLISIS 03</div>
-          <h3>Costo por servicio</h3>
-          <p>Seguimiento del costo por servicio y principales factores de variación.</p>
+          <h3>Análisis de Costos</h3>
+          <p>Seguimiento de costos por servicio y principales factores de variación.</p>
         </div>
         <div class="card-link">Ver análisis →</div>
       </a>
