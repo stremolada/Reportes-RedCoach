@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Análisis Diesel 2026 - Costo Oculto Farm Out</title>
+<title>Análisis Diesel 2026 (Ene–Ago) - Costo Oculto Farm Out</title>
 <style>
   :root{
     --bg:#F6F6F7;
@@ -155,6 +155,29 @@
   .svc-detail{margin-top:28px;}
   .chart-tooltip.show{opacity:1;}
 
+  .card:has(table){overflow-x:auto;}
+  @media (max-width:860px){
+    .kpis{grid-template-columns:repeat(2,1fr) !important;}
+    .tabbar{overflow-x:auto; scrollbar-width:none;} .tabbar button{white-space:nowrap; padding:12px 14px;}
+    .hero-stat{padding:24px 22px;}
+  }
+  /* PERIOD BAR */
+  .period-bar{position:sticky; top:0; z-index:50; background:rgba(255,255,255,0.96); backdrop-filter:blur(6px); border-bottom:1px solid var(--line); box-shadow:0 8px 18px -14px rgba(16,27,24,0.25);}
+  .pb-inner{display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding-top:10px; padding-bottom:10px;}
+  .pb-label{font-family:var(--font-mono); font-size:11.5px; color:var(--ink-soft);}
+  .seg-toggle{display:inline-flex; border:1.5px solid var(--brand); border-radius:6px; overflow:hidden;}
+  .seg-toggle button{border:none; background:#fff; color:var(--brand); font-family:var(--font-mono); font-size:12.5px; font-weight:600; padding:7px 16px; cursor:pointer; transition:background .15s ease, color .15s ease;}
+  .seg-toggle button + button{border-left:1.5px solid var(--brand);}
+  .seg-toggle button.active{background:var(--brand); color:#fff;}
+  .pb-month{display:inline-flex; align-items:center; gap:8px;}
+  .pb-month select{padding:7px 32px 7px 12px; font-size:13px; font-family:var(--font-body); border:1.5px solid var(--line); border-radius:6px; color:var(--ink); cursor:pointer; appearance:none; -webkit-appearance:none;
+    background:#fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M5.5 7.5l4.5 4.5 4.5-4.5' stroke='%235B5B60' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>") no-repeat right 10px center; background-size:14px;}
+  .pb-month select:focus{outline:none; border-color:var(--brand);}
+  .pb-desc{margin-left:auto; font-family:var(--font-display); font-weight:600; font-size:14px; color:var(--brand-dark);}
+  tbody tr.sel-row{background:var(--alert-soft);} tbody tr.sel-row td.name{color:var(--brand-dark);}
+  tbody tr.dim-row td{opacity:.45;}
+  @media (max-width:700px){ .pb-desc{margin-left:0; width:100%;} }
+
   @media (max-width:860px){
     .wrap{padding:0 20px;}
     .hero-stat{grid-template-columns:1fr;}
@@ -173,8 +196,8 @@
     <h1>Análisis Diesel 2026 - Costo Oculto Farm Out</h1>
     <div class="meta-row">
       <span><b>Florida + Texas</b></span>
-      <span>Ene–Jul 2026</span>
-      <span>Fuentes: FL (Palm Dale + Coast + Pilot), TX (Coast Spend Report), Millas GPS/telemetría</span>
+      <span class="p-desc"></span>
+      <span>Fuentes: FL (Palm Dale + Coast + Pilot), TX (Coast Spend Report), Millas GPS/telemetría · Farm Out motivo Bus / Driver</span>
     </div>
     <div class="tabbar" id="tabbar">
       <button data-tab="florida" class="active">Florida</button>
@@ -184,6 +207,17 @@
     </div>
   </div>
 </header>
+
+<div class="period-bar">
+  <div class="wrap pb-inner">
+    <span class="pb-label">Ver</span>
+    <div class="seg-toggle" role="group" aria-label="Modo de período">
+      <button data-mode="mes">Mes</button><button data-mode="acum" class="active">Acumulado</button>
+    </div>
+    <label class="pb-month"><span class="pb-label" id="monthLabel">Hasta</span><select id="monthSelect" aria-label="Mes"></select></label>
+    <span class="pb-desc p-desc"></span>
+  </div>
+</div>
 
 <div class="wrap">
 
@@ -199,7 +233,7 @@
         <div class="row"><span>Millas Farm Out</span><b id="fl-hf-miles-hero">—</b></div>
         <div class="row"><span>Fuel hipotético (tasa ppto.)</span><b id="fl-hf-fuel-pres-hero">—</b></div>
         <div class="row"><span>$/milla real usado</span><b id="fl-rate-real">—</b></div>
-        <div class="row"><span>Sobrecosto total de diesel YTD</span><b id="fl-real">—</b></div>
+        <div class="row"><span>Sobrecosto diesel del período</span><b id="fl-real">—</b></div>
       </div>
     </div>
 
@@ -211,7 +245,7 @@
       <div class="kpis" style="grid-template-columns:repeat(5,1fr); margin-bottom:20px;">
         <div class="kpi"><div class="k-label">Millas Farm Out</div><div class="k-value" id="fl-hf-miles">—</div><div class="k-sub">Recorridas por terceros</div></div>
         <div class="kpi"><div class="k-label">Galones hipotéticos</div><div class="k-value" id="fl-hf-galones">—</div><div class="k-sub" id="fl-hf-galones-sub">÷ MPG promedio real</div></div>
-        <div class="kpi"><div class="k-label">Precio promedio real</div><div class="k-value" id="fl-hf-precio">—</div><div class="k-sub">Por galón, Ene-Jul</div></div>
+        <div class="kpi"><div class="k-label">Precio promedio real</div><div class="k-value" id="fl-hf-precio">—</div><div class="k-sub">Por galón, <span class="p-short"></span></div></div>
         <div class="kpi"><div class="k-label">Sobrecosto de fuel (tasa real)</div><div class="k-value alert" id="fl-hf-fuel">—</div><div class="k-sub">Galones × Precio</div></div>
         <div class="kpi"><div class="k-label">Sobrecosto de fuel (tasa ppto.)</div><div class="k-value" id="fl-hf-fuel-pres">—</div><div class="k-sub">Referencia al $/milla presupuestado</div></div>
       </div>
@@ -254,11 +288,11 @@
     </section>
 
     <section class="tight">
-      <h2><span class="idx">04</span>Descomposición de la variación YTD</h2>
+      <h2><span class="idx">04</span>Descomposición de la variación del período</h2>
       <p class="section-lead">De cuánto del sobrecosto es precio de mercado, cuánto es kilometraje y cuánto es eficiencia de flota (MPG), medido contra un precio de referencia de $3.30/gal y el rendimiento presupuestado.</p>
       <div class="card"><div id="fl-decomp"></div></div>
       <div class="callout">
-        <p><b>Ahorro por menor kilometraje:</b> Florida recorrió <b id="fl-millas-diff">—</b> millas menos de las presupuestadas entre enero y julio (<b id="fl-millas-pct">—</b>), y la brecha creció mes a mes (de −21,963 millas en enero a −37,365 en julio). Manteniendo el precio del diesel y la eficiencia de flota constantes, ese menor kilometraje representó un <b style="color:var(--good)">ahorro de <span id="fl-millas-savings">—</span></b> frente al presupuesto de combustible.</p>
+        <p id="fl-millas-callout"></p>
       </div>
     </section>
   </div>
@@ -275,7 +309,7 @@
         <div class="row"><span>Millas Farm Out</span><b id="tx-hf-miles-hero">—</b></div>
         <div class="row"><span>Fuel hipotético (tasa ppto.)</span><b id="tx-hf-fuel-pres-hero">—</b></div>
         <div class="row"><span>$/milla real usado</span><b id="tx-rate-real">—</b></div>
-        <div class="row"><span>Sobrecosto total de diesel YTD</span><b id="tx-real">—</b></div>
+        <div class="row"><span>Sobrecosto diesel del período</span><b id="tx-real">—</b></div>
       </div>
     </div>
 
@@ -287,7 +321,7 @@
       <div class="kpis" style="grid-template-columns:repeat(5,1fr); margin-bottom:20px;">
         <div class="kpi"><div class="k-label">Millas Farm Out</div><div class="k-value" id="tx-hf-miles">—</div><div class="k-sub">Recorridas por terceros</div></div>
         <div class="kpi"><div class="k-label">Galones hipotéticos</div><div class="k-value" id="tx-hf-galones">—</div><div class="k-sub" id="tx-hf-galones-sub">÷ MPG promedio real</div></div>
-        <div class="kpi"><div class="k-label">Precio promedio real</div><div class="k-value" id="tx-hf-precio">—</div><div class="k-sub">Por galón, Ene-Jul</div></div>
+        <div class="kpi"><div class="k-label">Precio promedio real</div><div class="k-value" id="tx-hf-precio">—</div><div class="k-sub">Por galón, <span class="p-short"></span></div></div>
         <div class="kpi"><div class="k-label">Sobrecosto de fuel (tasa real)</div><div class="k-value alert" id="tx-hf-fuel">—</div><div class="k-sub">Galones × Precio</div></div>
         <div class="kpi"><div class="k-label">Sobrecosto de fuel (tasa ppto.)</div><div class="k-value" id="tx-hf-fuel-pres">—</div><div class="k-sub">Referencia al $/milla presupuestado</div></div>
       </div>
@@ -330,11 +364,11 @@
     </section>
 
     <section class="tight">
-      <h2><span class="idx">04</span>Descomposición de la variación YTD</h2>
+      <h2><span class="idx">04</span>Descomposición de la variación del período</h2>
       <p class="section-lead">De cuánto del sobrecosto es precio de mercado, cuánto es kilometraje y cuánto es eficiencia de flota (MPG), medido contra un precio de referencia de $3.30/gal y el rendimiento presupuestado.</p>
       <div class="card"><div id="tx-decomp"></div></div>
       <div class="callout">
-        <p><b>Kilometraje:</b> a diferencia de Florida, Texas recorrió <b id="tx-millas-diff">—</b> millas <span id="tx-millas-word">—</span> de las presupuestadas entre enero y julio — el kilometraje no está ayudando a compensar el sobrecosto de precio como sí ocurre en Florida.</p>
+        <p id="tx-millas-callout"></p>
       </div>
     </section>
   </div>
@@ -348,10 +382,10 @@
         <p class="label" id="co-label"></p>
       </div>
       <div class="hero-side">
-        <div class="row"><span>Millas Farm Out YTD</span><b id="co-hf-miles-hero">—</b></div>
+        <div class="row"><span>Millas Farm Out</span><b id="co-hf-miles-hero">—</b></div>
         <div class="row"><span>Sobrecosto de fuel (tasa ppto.)</span><b id="co-hf-fuel-pres-hero">—</b></div>
         <div class="row"><span>$/milla real usado</span><b id="co-rate-real">—</b></div>
-        <div class="row"><span>Sobrecosto total de diesel YTD</span><b id="co-real">—</b></div>
+        <div class="row"><span>Sobrecosto diesel del período</span><b id="co-real">—</b></div>
       </div>
     </div>
 
@@ -359,16 +393,16 @@
 
     <section class="tight first">
       <h2><span class="idx">01</span>Costo oculto de fuel en Farm Out — la pregunta de gerencia</h2>
-      <p class="section-lead">Esta sección responde directamente: <b>¿cuánto nos hubiera costado el diesel si las millas que hoy se recorren por farm out las hubiéramos operado con bus propio?</b> Es un <b style="color:var(--alert)">sobrecosto hipotético de combustible</b> — hoy no lo vemos porque lo asume el tercero, pero existiría igual si el servicio fuera propio. El cálculo usa las millas reales de cada salida cubierta por farm out (base de ticketing/telemetría) multiplicadas por la <b>tasa promedio real del período</b> (Precio promedio $/gal ÷ Rendimiento promedio MPG, ambos derivados de las facturas reales de diesel, constante por estado — no una tasa que cambia mes a mes ni un supuesto fijo).</p>
+      <p class="section-lead">Esta sección responde directamente: <b>¿cuánto nos hubiera costado el diesel si las millas que hoy se recorren por farm out las hubiéramos operado con bus propio?</b> Es un <b style="color:var(--alert)">sobrecosto hipotético de combustible</b> — hoy no lo vemos porque lo asume el tercero, pero existiría igual si el servicio fuera propio. El cálculo usa las millas reales de cada salida cubierta por farm out (base mensual de Farm Out, solo motivo Bus o Driver) multiplicadas por la <b>tasa promedio real del período</b> (Precio promedio $/gal ÷ Rendimiento promedio MPG, ambos derivados de las facturas reales de diesel, constante por estado — no una tasa que cambia mes a mes ni un supuesto fijo).</p>
       <div class="kpis" style="grid-template-columns:repeat(5,1fr);">
-        <div class="kpi"><div class="k-label">Millas Farm Out YTD</div><div class="k-value" id="co-hf-miles">—</div><div class="k-sub">Florida + Texas</div></div>
+        <div class="kpi"><div class="k-label">Millas Farm Out</div><div class="k-value" id="co-hf-miles">—</div><div class="k-sub">Florida + Texas</div></div>
         <div class="kpi"><div class="k-label">Galones hipotéticos</div><div class="k-value" id="co-hf-galones">—</div><div class="k-sub">Millas ÷ MPG real, por estado</div></div>
         <div class="kpi"><div class="k-label">Sobrecosto de fuel (tasa real)</div><div class="k-value alert" id="co-hf-fuel">—</div><div class="k-sub">Escenario principal</div></div>
         <div class="kpi"><div class="k-label">Sobrecosto de fuel (tasa ppto.)</div><div class="k-value" id="co-hf-fuel-pres">—</div><div class="k-sub">Escenario de referencia</div></div>
         <div class="kpi"><div class="k-label">% de las millas totales</div><div class="k-value" id="co-hf-pct">—</div><div class="k-sub">Millas Farm Out / Millas totales</div></div>
       </div>
       <div class="callout" style="margin-top:16px;">
-        <p><b>El cálculo, paso a paso:</b> Florida — <b id="co-formula-fl">—</b>. Texas — <b id="co-formula-tx">—</b>. El precio y el rendimiento son promedios reales derivados de las facturas de diesel de enero a julio — no son supuestos.</p>
+        <p><b>El cálculo, paso a paso:</b> Florida — <b id="co-formula-fl">—</b>. Texas — <b id="co-formula-tx">—</b>. El precio y el rendimiento son promedios reales derivados de las facturas de diesel del período seleccionado — no son supuestos.</p>
       </div>
       <div class="card" style="margin-top:20px;">
         <div class="chart-holder" id="co-hf-chart"></div>
@@ -379,16 +413,16 @@
         <div id="co-hf-routes"></div>
       </div>
       <div class="callout">
-        <p><b>Para gerencia:</b> <b id="co-hf-inline">—</b> es el <b>sobrecosto de fuel</b> que hubiéramos tenido si esas millas se operan con flota propia — hoy no aparece en nuestra cuenta de diesel porque lo paga el tercero, pero es un costo real que existiría en cualquiera de los dos escenarios (propio o farm out). Es distinto del sobrecosto de $386,783 de la sección 03: ese ya refleja lo que gastamos de más en las millas que sí operamos con flota propia; este monto es lo que se sumaría si absorbiéramos también las millas que hoy se recorren por farm out.</p>
+        <p><b>Para gerencia:</b> <b id="co-hf-inline">—</b> es el <b>sobrecosto de fuel</b> que hubiéramos tenido si esas millas se operan con flota propia — hoy no aparece en nuestra cuenta de diesel porque lo paga el tercero, pero es un costo real que existiría en cualquiera de los dos escenarios (propio o farm out). Es distinto del sobrecosto de <span id="co-var-inline">—</span> de la sección 02: ese ya refleja lo que gastamos de más en las millas que sí operamos con flota propia; este monto es lo que se sumaría si absorbiéramos también las millas que hoy se recorren por farm out.</p>
       </div>
     </section>
 
     <section class="tight">
       <h2><span class="idx">02</span>El panorama en números</h2>
-      <p class="section-lead">Cifras consolidadas de diesel a nivel Florida + Texas, enero–julio 2026 — el presupuesto y gasto real de combustible que sí operamos con flota propia.</p>
+      <p class="section-lead">Cifras consolidadas de diesel a nivel Florida + Texas, <span class="p-long"></span> — el presupuesto y gasto real de combustible que sí operamos con flota propia.</p>
       <div class="kpis">
-        <div class="kpi"><div class="k-label">Costo Pres. YTD</div><div class="k-value" id="co-k-pres">—</div><div class="k-sub">Presupuesto de diesel del período</div></div>
-        <div class="kpi"><div class="k-label">Costo Real YTD</div><div class="k-value alert" id="co-k-real">—</div><div class="k-sub">Gasto real de diesel del período</div></div>
+        <div class="kpi"><div class="k-label">Costo Pres.</div><div class="k-value" id="co-k-pres">—</div><div class="k-sub">Presupuesto de diesel del período</div></div>
+        <div class="kpi"><div class="k-label">Costo Real</div><div class="k-value alert" id="co-k-real">—</div><div class="k-sub">Gasto real de diesel del período</div></div>
         <div class="kpi"><div class="k-label">Sobrecosto</div><div class="k-value alert" id="co-k-var">—</div><div class="k-sub" id="co-k-varsub">vs. presupuesto</div></div>
         <div class="kpi"><div class="k-label">Fuel oculto en Farm Out</div><div class="k-value alert" id="co-k-hf">—</div><div class="k-sub">No visible en el gasto de diesel</div></div>
       </div>
@@ -423,26 +457,17 @@
     </section>
 
     <section class="tight">
-      <h2><span class="idx">05</span>Descomposición de la variación YTD</h2>
+      <h2><span class="idx">05</span>Descomposición de la variación del período</h2>
       <p class="section-lead">Del sobrecosto de diesel, ¿cuánto es precio de mercado (no controlable), cuánto es kilometraje y cuánto es eficiencia de flota (MPG)? Medido contra un precio de referencia de $3.30/gal y el rendimiento presupuestado (FL 7.7 MPG, TX 7.3 MPG).</p>
       <div class="card"><div id="co-decomp"></div></div>
       <div class="callout">
-        <p><b>Lectura:</b> el sobrecosto de diesel es <b>casi todo precio de mercado</b> — el diesel real promedió bien por encima del precio de referencia usado en el presupuesto. La <b>eficiencia de flota (MPG)</b> agrava el problema: la flota rindió menos millas por galón que el objetivo. El <b>kilometraje</b> es la única variable que jugó a favor: se manejaron menos millas propias de lo presupuestado — parte de esa reducción es, justamente, el resultado de cubrir parte del volumen con farm out.</p>
+        <p id="co-lectura"></p>
       </div>
     </section>
 
     <section class="tight">
       <h2><span class="idx">06</span>Lectura del análisis</h2>
-      <div class="insights">
-        <div class="insight"><div class="tag">El costo oculto</div><p>El sobrecosto de fuel que hubiéramos tenido en las millas que hoy se recorren por farm out ronda los <b id="ins-hf">—</b> YTD. Es dinero que no vemos en la cuenta de diesel, pero que habría existido igual si el servicio fuera propio.</p></div>
-        <div class="insight"><div class="tag">Precio, el gran impulsor</div><p>El diesel real promedió muy por encima del precio de referencia presupuestado ($3.30/gal). Es la variable que más pesa en el sobrecosto y, al ser precio de mercado, es la <b>menos controlable</b> por la operación.</p></div>
-        <div class="insight"><div class="tag">Eficiencia de flota</div><p>El MPG real quedó por debajo del objetivo tanto en Florida (7.7 ppto.) como en Texas (7.3 ppto.), agravando el sobrecosto. Es la <b class="g">única palanca accionable</b> de las tres.</p></div>
-        <div class="insight"><div class="tag">Kilometraje a favor</div><p>Se manejaron menos millas propias que las presupuestadas — parcialmente porque una parte del volumen se resolvió vía farm out en lugar de flota propia.</p></div>
-        <div class="insight"><div class="tag">Florida vs. Texas</div><p>Florida concentra la mayor parte del volumen cubierto por farm out y, en consecuencia, del fuel oculto. Texas recorre menos millas por farm out, pero a una tasa $/milla más alta en varios meses.</p></div>
-        <div class="insight"><div class="tag">Validación de datos</div><p>Las millas farmeadas provienen de una base ya depurada y confirmada de salidas en farm out (340 registros, Ene-Jul, sin nulos en millas ni servicio) — no de una inferencia por marca de tarifa.</p></div>
-        <div class="insight"><div class="tag">Por qué se farmeó</div><p>De las 340 salidas, <b>229 (67%)</b> fueron "Regular route" — un servicio que debía cubrirse con flota propia y no se pudo. Las otras <b>111 (33%)</b> son "Operational agreement", farm out planeado de antemano.</p></div>
-        <div class="insight"><div class="tag">Próximo paso</div><p>Esta misma lógica de prorrateo por millas puede extenderse a otras partidas variables (Tolls, Oil &amp; Lubes, Tires) para aislar, partida por partida, qué parte del farm out es realmente "extra" y cuál habría ocurrido de todas formas.</p></div>
-      </div>
+      <div class="insights" id="insights"></div>
     </section>
   </div>
 
@@ -451,7 +476,7 @@
     <span class="state-tag"><span class="dot"></span>Buscar por servicio</span>
     <div class="card" style="margin-top:14px;">
       <h2 style="margin-bottom:6px;">¿Cuánto sobrecosto de fuel generó un servicio puntual?</h2>
-      <p class="section-lead" style="margin-bottom:18px;">Elige un número de servicio para ver su sobrecosto oculto de fuel en Farm Out, enero–julio 2026.</p>
+      <p class="section-lead" style="margin-bottom:18px;">Elige un número de servicio para ver su sobrecosto oculto de fuel en Farm Out (motivo Bus o Driver), <span class="p-long"></span>.</p>
       <div class="search-box">
         <select id="svcSelect">
           <option value="" disabled selected>Selecciona un servicio…</option>
@@ -459,6 +484,7 @@
       </div>
     </div>
 
+    <div id="svcGone" class="svc-empty" style="display:none;">El servicio que tenías seleccionado no tuvo salidas por Bus o Driver en este período. Elige otro de la lista.</div>
     <div id="svcDetail" class="svc-detail" style="display:none;">
       <div class="route tight"><div class="stop"></div><div class="seg"></div><div class="stop"></div><div class="seg"></div><div class="stop"></div></div>
 
@@ -470,7 +496,8 @@
         <div class="hero-side">
           <div class="row"><span>Ruta</span><b id="svc-route">—</b></div>
           <div class="row"><span>Estado</span><b id="svc-state">—</b></div>
-          <div class="row"><span>Salidas farmeadas (Ene-Jul)</span><b id="svc-salidas">—</b></div>
+          <div class="row"><span>Salidas farmeadas (<span class="p-short"></span>)</span><b id="svc-salidas">—</b></div>
+          <div class="row"><span>Motivo (Bus / Driver)</span><b id="svc-motivo">—</b></div>
           <div class="row"><span>Millas farmeadas</span><b id="svc-millas">—</b></div>
         </div>
       </div>
@@ -495,7 +522,7 @@
 
   <footer>
     <div class="route tight" style="margin-bottom:20px;"><div class="stop"></div><div class="seg"></div><div class="stop"></div><div class="seg"></div><div class="stop"></div></div>
-    <p><b>Metodología:</b> "Costo Pres." y "Costo Real" provienen del análisis de diesel (Palm Dale + Coast + Pilot en FL; Coast Spend Report en TX). El "Costo oculto de fuel en Farm Out" se calcula con una <b>tasa promedio real constante por estado</b> = Precio promedio real del galón ÷ Rendimiento promedio real (MPG) del período — equivalente a Costo Real YTD ÷ Millas Real YTD — <b>no</b> con el $/milla que varía mes a mes ni con un supuesto fijo (ej. $5/gal, 8 mpg): Florida ≈ $4.66/gal y 7.22 mpg (tasa $0.646/milla); Texas ≈ $4.46/gal y 6.55 mpg (tasa $0.681/milla). Esa tasa se aplica a las millas farmeadas, que provienen de una base depurada de 340 salidas confirmadas en farm out (enero–julio, sin nulos en millas ni número de servicio), con su ruta y motivo (Regular route / Operational agreement). Este análisis cubre específicamente la categoría "Regular Problemas" (farm out por indisponibilidad de bus/conductor) — no incluye Regular Services, Additional, Op Agreement Caribbean ni Farm Out Rolando, que son categorías de farm out separadas con su propio propósito. La descomposición de variación usa como base un precio de referencia de $3.30/gal y el MPG presupuestado (FL 7.7, TX 7.3): Impacto Precio = (Precio Real − Precio Ref) × Galones Pres; Impacto Millas = (Millas Real − Millas Pres) ÷ MPG Pres × Precio Real; Impacto Eficiencia = (Galones Real − Millas Real ÷ MPG Pres) × Precio Real. Datos: enero–julio 2026.</p>
+    <p><b>Metodología:</b> "Costo Pres." y "Costo Real" provienen de la hoja ④ Fuel de la Base de Datos para Aplicativo (Palm Dale + Coast + Pilot en FL; Coast Spend Report en TX), enero–agosto 2026; MPG, $/galón y $/milla se recalculan en cada mes a partir de costo, galones y millas. El "Costo oculto de fuel en Farm Out" se calcula con una <b>tasa promedio real constante por estado</b> = Precio promedio real del galón ÷ Rendimiento promedio real (MPG) del período — equivalente a Costo Real ÷ Millas Real del período — <b>no</b> con el $/milla que varía mes a mes ni con un supuesto fijo: Para el período seleccionado: Florida ≈ <span id="ft-fl">—</span>; Texas ≈ <span id="ft-tx">—</span>. Las salidas farmeadas vienen de la hoja Resumen de Copia de Farmouts 2026 (enero–agosto), <b>solo registros con Reason = Bus o Driver</b> (348 salidas); no incluye Regular route ni Additional Service. Cuando Resumen no trae millas (37 salidas) se usa la distancia real de ese servicio en esa fecha según la hoja data (ticketing) y, si el servicio no corrió ese día, su milla habitual. Los registros con dos servicios (ej. 8022/8023, ida y vuelta) se cuentan como una sola salida con la milla de uno de los servicios; el código 811578114 se leyó como 8115/8114, y se excluyó el cargo de $200 del 9037 del 13/01 por ser la diferencia de un viaje ya registrado. Los 7 registros sin estado o con un estado distinto al del servicio se asignaron según el servicio. La descomposición de variación suma los impactos de cada mes del período contra un precio de referencia de $3.30/gal y el MPG presupuestado (FL 7.7, TX 7.3): Impacto Precio = (Precio Real − Precio Ref) × Galones Pres; Impacto Millas = (Millas Real − Millas Pres) ÷ MPG Pres × Precio Real; Impacto Eficiencia = (Galones Real − Millas Real ÷ MPG Pres) × Precio Real. <b>Selector de período:</b> en "Acumulado" todo se calcula de enero al mes elegido (la tasa real es la del acumulado); en "Mes" se usa solo ese mes, con su propio precio, rendimiento y tasa $/milla. Datos disponibles: enero–agosto 2026.</p>
 
   </footer>
 </div>
@@ -503,377 +530,319 @@
 <button class="to-top" id="toTop" aria-label="Volver arriba">↑</button>
 
 <script>
-const DATA = {"monthly": {"Florida": [{"mes": "Enero", "costo_pres": 98823.68, "costo_real": 97185.26, "var_d": -1638.4199999999983, "var_pct": -1.6579224736419433, "millas_pres": 226067, "millas_real": 204104, "galones_real": 27656.74, "mpg_real": 7.379900884919914, "precio_galon": 3.5139810404263114, "milla_pres_rate": 0.4371433247665515, "milla_real_rate": 0.4761555873476267}, {"mes": "Febrero", "costo_pres": 88667.67, "costo_real": 102835.08, "var_d": 14167.410000000003, "var_pct": 15.978101150058418, "millas_pres": 202835, "millas_real": 183242, "galones_real": 26588.2, "mpg_real": 6.891854281222497, "precio_galon": 3.8676961960568974, "milla_pres_rate": 0.43714186407671257, "milla_real_rate": 0.5611981969199201}, {"mes": "Marzo", "costo_pres": 98667.14, "costo_real": 154238.67, "var_d": 55571.53000000001, "var_pct": 56.32222642715702, "millas_pres": 225709, "millas_real": 207140, "galones_real": 29062.01, "mpg_real": 7.127518020948998, "precio_galon": 5.307226513238417, "milla_pres_rate": 0.43714313563039137, "milla_real_rate": 0.7446107463551223}, {"mes": "Abril", "costo_pres": 94737.6, "costo_real": 134981.24, "var_d": 40243.639999999985, "var_pct": 42.479057945314196, "millas_pres": 216720, "millas_real": 186593, "galones_real": 24861.351, "mpg_real": 7.505344339493055, "precio_galon": 5.429360616806384, "milla_pres_rate": 0.43714285714285717, "milla_real_rate": 0.7233992700690808}, {"mes": "Mayo", "costo_pres": 99137.07, "costo_real": 133419.04, "var_d": 34281.97, "var_pct": 34.58037442502587, "millas_pres": 226784, "millas_real": 191699, "galones_real": 25513.726000000002, "mpg_real": 7.513563483436327, "precio_galon": 5.2293044144159895, "milla_pres_rate": 0.4371431406095668, "milla_real_rate": 0.6959819300048514}, {"mes": "Junio", "costo_pres": 94737.6, "costo_real": 107280.54, "var_d": 12542.939999999988, "var_pct": 13.239664082687325, "millas_pres": 216720, "millas_real": 185087, "galones_real": 22554.851000000002, "mpg_real": 8.206083915163083, "precio_galon": 4.756428672483803, "milla_pres_rate": 0.43714285714285717, "milla_real_rate": 0.5796222317072511}, {"mes": "Julio", "costo_pres": 98224.79, "costo_real": 138741.32, "var_d": 40516.53000000001, "var_pct": 41.24878251203186, "millas_pres": 224697, "millas_real": 187332, "galones_real": 30198.488999999998, "mpg_real": 6.203356730861601, "precio_galon": 4.594313311503765, "milla_pres_rate": 0.4371433085443953, "milla_real_rate": 0.7406172997672582}], "Texas": [{"mes": "Enero", "costo_pres": 69856.35, "costo_real": 58239.34, "var_d": -11617.01000000001, "var_pct": -16.629855410424405, "millas_pres": 144556, "millas_real": 124887, "galones_real": 19246.7, "mpg_real": 6.488748720559888, "precio_galon": 3.025938992138912, "milla_pres_rate": 0.4832476687235397, "milla_real_rate": 0.4663362880043559}, {"mes": "Febrero", "costo_pres": 62789.06, "costo_real": 66924.75, "var_d": 4135.690000000002, "var_pct": 6.586641048615798, "millas_pres": 129932, "millas_real": 133274, "galones_real": 20384.4, "mpg_real": 6.53803889248641, "precio_galon": 3.283135633131218, "milla_pres_rate": 0.48324554382292273, "milla_real_rate": 0.5021590857931779}, {"mes": "Marzo", "costo_pres": 69228.56, "costo_real": 106967.23, "var_d": 37738.67, "var_pct": 54.51315179746625, "millas_pres": 143257, "millas_real": 146347, "galones_real": 22593.5, "mpg_real": 6.477393940735167, "precio_galon": 4.73442494522761, "milla_pres_rate": 0.4832473107771348, "milla_real_rate": 0.7309150853792697}, {"mes": "Abril", "costo_pres": 63870.15, "costo_real": 111765.48, "var_d": 47895.329999999994, "var_pct": 74.98859796007993, "millas_pres": 132169, "millas_real": 139313, "galones_real": 20004.98, "mpg_real": 6.963915984919755, "precio_galon": 5.586882866166325, "milla_pres_rate": 0.4832460713177825, "milla_real_rate": 0.802261669765205}, {"mes": "Mayo", "costo_pres": 64793.09, "costo_real": 104713.03, "var_d": 39919.94, "var_pct": 61.611415661762706, "millas_pres": 134079, "millas_real": 138865, "galones_real": 19528.903, "mpg_real": 7.110742472324227, "precio_galon": 5.361951462404212, "milla_pres_rate": 0.4832456238486265, "milla_real_rate": 0.754063514924567}, {"mes": "Junio", "costo_pres": 63376.08, "costo_real": 95198.77, "var_d": 31822.690000000002, "var_pct": 50.212461862582856, "millas_pres": 131146.46, "millas_real": 130575, "galones_real": 21267.402, "mpg_real": 6.1396779916982815, "precio_galon": 4.476276415896968, "milla_pres_rate": 0.48324659316004415, "milla_real_rate": 0.7290734826727935}, {"mes": "Julio", "costo_pres": 65783.89, "costo_real": 106985.5, "var_d": 41201.61, "var_pct": 62.6317628829794, "millas_pres": 136129, "millas_real": 142611, "galones_real": 22901.36, "mpg_real": 6.227184761079691, "precio_galon": 4.671578456475947, "milla_pres_rate": 0.4832466998214928, "milla_real_rate": 0.7501910792295124}], "Consolidado": [{"mes": "Enero", "costo_pres": 168680.03, "costo_real": 155424.59999999998, "var_d": -13255.430000000022, "var_pct": -7.858327983460771, "millas_pres": 370623, "millas_real": 328991, "galones_real": 46903.44, "mpg_real": 7.014218999715159, "precio_galon": 3.313714303257927, "milla_pres_rate": 0.45512563980109166, "milla_real_rate": 0.4724281211340127}, {"mes": "Febrero", "costo_pres": 151456.72999999998, "costo_real": 169759.83000000002, "var_d": 18303.100000000035, "var_pct": 12.084705644972024, "millas_pres": 332767, "millas_real": 316516, "galones_real": 46972.600000000006, "mpg_real": 6.73831127082597, "precio_galon": 3.6140181722961895, "milla_pres_rate": 0.45514347877043093, "milla_real_rate": 0.5363388580672067}, {"mes": "Marzo", "costo_pres": 167895.7, "costo_real": 261205.90000000002, "var_d": 93310.20000000001, "var_pct": 55.576289327243046, "millas_pres": 368966, "millas_real": 353487, "galones_real": 51655.509999999995, "mpg_real": 6.843161552368761, "precio_galon": 5.056689983314462, "milla_pres_rate": 0.45504382517630354, "milla_real_rate": 0.7389406116773743}, {"mes": "Abril", "costo_pres": 158607.75, "costo_real": 246746.71999999997, "var_d": 88138.96999999997, "var_pct": 55.57040560754438, "millas_pres": 348889, "millas_real": 325906, "galones_real": 44866.331, "mpg_real": 7.263932502080458, "precio_galon": 5.499596568304192, "milla_pres_rate": 0.45460805585730707, "milla_real_rate": 0.7571100869575889}, {"mes": "Mayo", "costo_pres": 163930.16, "costo_real": 238132.07, "var_d": 74201.91, "var_pct": 45.26434305926377, "millas_pres": 360863, "millas_real": 330564, "galones_real": 45042.629, "mpg_real": 7.338914431482229, "precio_galon": 5.286815518694524, "milla_pres_rate": 0.4542725632719342, "milla_real_rate": 0.7203811364818916}, {"mes": "Junio", "costo_pres": 158113.68, "costo_real": 202479.31, "var_d": 44365.630000000005, "var_pct": 28.05932415209108, "millas_pres": 347866.45999999996, "millas_real": 315662, "galones_real": 43822.253, "mpg_real": 7.20323530604417, "precio_galon": 4.620467824874272, "milla_pres_rate": 0.45452407225462327, "milla_real_rate": 0.6414434109902364}, {"mes": "Julio", "costo_pres": 164008.68, "costo_real": 245726.82, "var_d": 81718.14000000001, "var_pct": 49.82549704076639, "millas_pres": 360826, "millas_real": 329943, "galones_real": 53099.849, "mpg_real": 6.213633488863593, "precio_galon": 4.627636888383618, "milla_pres_rate": 0.45453675732901727, "milla_real_rate": 0.7447553668360899}]}, "ytd": {"Florida": {"costo_pres": 672995.55, "costo_real": 868681.15, "var_d": 195685.59999999998, "var_pct": 29.076804445438007, "millas_pres": 1539532, "millas_real": 1345197, "galones_real": 186435.367, "mpg_real": 7.2153530826584, "precio_galon": 4.659422533279321, "milla_pres_rate": 0.4371429434399545, "milla_real_rate": 0.6457650069097686}, "Texas": {"costo_pres": 459697.18, "costo_real": 650794.1, "var_d": 191096.91999999998, "var_pct": 41.57017452228008, "millas_pres": 951268.46, "millas_real": 955872, "galones_real": 145927.245, "mpg_real": 6.5503326674878295, "precio_galon": 4.459716209951061, "milla_pres_rate": 0.483246527483945, "milla_real_rate": 0.6808381247698436}, "Consolidado": {"costo_pres": 1132692.73, "costo_real": 1519475.25, "var_d": 386782.52, "var_pct": 34.147170698270486, "millas_pres": 2490800.46, "millas_real": 2301069, "galones_real": 332362.612, "mpg_real": 6.92336898591951, "precio_galon": 4.571739404912367, "milla_pres_rate": 0.4547504901295867, "milla_real_rate": 0.6603345010514678}}, "decomp_ytd": {"Florida": {"imp_precio": 196828.85767051703, "imp_millas": -77733.46999569623, "imp_eficiencia": 32943.18803946499, "imp_total": 152038.57571428578}, "Texas": {"imp_precio": 101698.96466796452, "imp_millas": 4336.90537332279, "imp_eficiencia": 33371.644890219526, "imp_total": 139407.51493150686}, "Consolidado": {"imp_precio": 298527.82233848155, "imp_millas": -73396.56462237344, "imp_eficiencia": 66314.83292968452, "imp_total": 291446.09064579266}}, "hidden_fuel_monthly": {"Florida": [{"mes": "Enero", "millas_fo": 22758.0, "rate_real": 0.6457650069097686, "fuel_hip_real": 14696.320027252514, "fuel_hip_pres": 9948.499106806485, "galones_hip": 3154.1076007350593}, {"mes": "Febrero", "millas_fo": 16956.0, "rate_real": 0.6457650069097686, "fuel_hip_real": 10949.591457162036, "fuel_hip_pres": 7412.195748967869, "galones_hip": 2349.9889479771364}, {"mes": "Marzo", "millas_fo": 17595.0, "rate_real": 0.6457650069097686, "fuel_hip_real": 11362.235296577377, "fuel_hip_pres": 7691.530089826, "galones_hip": 2438.5501025983554}, {"mes": "Abril", "millas_fo": 12331.0, "rate_real": 0.6457650069097686, "fuel_hip_real": 7962.928300204356, "fuel_hip_pres": 5390.40963555808, "galones_hip": 1708.9946754839625}, {"mes": "Mayo", "millas_fo": 9270.0, "rate_real": 0.6457650069097686, "fuel_hip_real": 5986.241614053554, "fuel_hip_pres": 4052.3150856883785, "galones_hip": 1284.7604121106424}, {"mes": "Junio", "millas_fo": 8755.0, "rate_real": 0.6457650069097686, "fuel_hip_real": 5653.672635495024, "fuel_hip_pres": 3827.186469816802, "galones_hip": 1213.3848336600513}, {"mes": "Julio", "millas_fo": 9270.0, "rate_real": 0.6457650069097686, "fuel_hip_real": 5986.241614053554, "fuel_hip_pres": 4052.3150856883785, "galones_hip": 1284.7604121106424}], "Texas": [{"mes": "Enero", "millas_fo": 3733.0, "rate_real": 0.6808381247698436, "fuel_hip_real": 2541.5687197658262, "fuel_hip_pres": 1803.9592870975666, "galones_hip": 569.8947197794265}, {"mes": "Febrero", "millas_fo": 5300.0, "rate_real": 0.6808381247698436, "fuel_hip_real": 3608.4420612801714, "fuel_hip_pres": 2561.2065956649085, "galones_hip": 809.1192110449934}, {"mes": "Marzo", "millas_fo": 5799.0, "rate_real": 0.6808381247698436, "fuel_hip_real": 3948.180285540323, "fuel_hip_pres": 2802.346612879397, "galones_hip": 885.29854808489}, {"mes": "Abril", "millas_fo": 5268.0, "rate_real": 0.6808381247698436, "fuel_hip_real": 3586.6552412875362, "fuel_hip_pres": 2545.7427067854223, "galones_hip": 804.2339629783067}, {"mes": "Mayo", "millas_fo": 1689.0, "rate_real": 0.6808381247698436, "fuel_hip_real": 1149.9355927362658, "fuel_hip_pres": 816.2033849203831, "galones_hip": 257.8494995198102}, {"mes": "Junio", "millas_fo": 0.0, "rate_real": 0.6808381247698436, "fuel_hip_real": 0.0, "fuel_hip_pres": 0.0, "galones_hip": 0.0}, {"mes": "Julio", "millas_fo": 0.0, "rate_real": 0.6808381247698436, "fuel_hip_real": 0.0, "fuel_hip_pres": 0.0, "galones_hip": 0.0}], "Consolidado": [{"mes": "Enero", "millas_fo": 26491.0, "fuel_hip_real": 17237.88874701834, "fuel_hip_pres": 11752.458393904051, "galones_hip": 3724.0023205144857}, {"mes": "Febrero", "millas_fo": 22256.0, "fuel_hip_real": 14558.033518442207, "fuel_hip_pres": 9973.402344632777, "galones_hip": 3159.1081590221297}, {"mes": "Marzo", "millas_fo": 23394.0, "fuel_hip_real": 15310.415582117701, "fuel_hip_pres": 10493.876702705398, "galones_hip": 3323.848650683245}, {"mes": "Abril", "millas_fo": 17599.0, "fuel_hip_real": 11549.583541491891, "fuel_hip_pres": 7936.152342343502, "galones_hip": 2513.2286384622694}, {"mes": "Mayo", "millas_fo": 10959.0, "fuel_hip_real": 7136.17720678982, "fuel_hip_pres": 4868.518470608762, "galones_hip": 1542.6099116304526}, {"mes": "Junio", "millas_fo": 8755.0, "fuel_hip_real": 5653.672635495024, "fuel_hip_pres": 3827.186469816802, "galones_hip": 1213.3848336600513}, {"mes": "Julio", "millas_fo": 9270.0, "fuel_hip_real": 5986.241614053554, "fuel_hip_pres": 4052.3150856883785, "galones_hip": 1284.7604121106424}]}, "hidden_fuel_ytd": {"Florida": {"millas_fo": 96935.0, "fuel_hip_real": 62597.230944798415, "fuel_hip_pres": 42374.45122235199, "galones_hip": 13434.54698467585, "mpg_usado": 7.2153530826584, "precio_usado": 4.659422533279321}, "Texas": {"millas_fo": 21789.0, "fuel_hip_real": 14834.781900610124, "fuel_hip_pres": 10529.458587347677, "galones_hip": 3326.395941407427, "mpg_usado": 6.5503326674878295, "precio_usado": 4.459716209951061}, "Consolidado": {"millas_fo": 118724.0, "fuel_hip_real": 77432.01284540854, "fuel_hip_pres": 52903.909809699675, "galones_hip": 16760.942926083277}}, "assumptions": {"mpg_pres_fl": 7.7, "mpg_pres_tx": 7.3, "precio_ref": 3.3}, "by_route_fuel": [{"Carrier": "Florida", "TripName": "Tallahassee - Orlando - Miami", "salidas": 62, "millas_fo": 31930, "fuel_hip": 20619.27667062891, "servicios": [8005, 8083]}, {"Carrier": "Florida", "TripName": "Miami - Orlando - Tallahassee", "salidas": 61, "millas_fo": 31415, "fuel_hip": 20286.70769207038, "servicios": [8004]}, {"Carrier": "Florida", "TripName": "Miami - Tampa", "salidas": 33, "millas_fo": 9834, "fuel_hip": 6350.453077950664, "servicios": [8030, 8094]}, {"Carrier": "Florida", "TripName": "Tampa - Miami", "salidas": 33, "millas_fo": 9834, "fuel_hip": 6350.453077950664, "servicios": [8031, 8095]}, {"Carrier": "Texas", "TripName": "Austin - Dallas", "salidas": 32, "millas_fo": 7184, "fuel_hip": 4891.141088346557, "servicios": [8130]}, {"Carrier": "Florida", "TripName": "Orlando - Miami", "salidas": 22, "millas_fo": 5540, "fuel_hip": 3577.538138280118, "servicios": [8061]}, {"Carrier": "Florida", "TripName": "Miami - Orlando", "salidas": 22, "millas_fo": 5346, "fuel_hip": 3452.259726939623, "servicios": [8008]}, {"Carrier": "Texas", "TripName": "Dallas - San Antonio", "salidas": 14, "millas_fo": 4324, "fuel_hip": 2943.9440515048036, "servicios": [8133]}, {"Carrier": "Texas", "TripName": "Dallas - Austin", "salidas": 17, "millas_fo": 3821, "fuel_hip": 2601.4824747455723, "servicios": [8131]}, {"Carrier": "Texas", "TripName": "Houston - Austin", "salidas": 19, "millas_fo": 3249, "fuel_hip": 2212.043067377222, "servicios": [81971]}, {"Carrier": "Texas", "TripName": "Austin - Houston", "salidas": 19, "millas_fo": 3211, "fuel_hip": 2186.1712186359678, "servicios": [81961]}, {"Carrier": "Florida", "TripName": "Atlanta  - Orlando", "salidas": 2, "millas_fo": 936, "fuel_hip": 604.4360464675434, "servicios": [7091]}, {"Carrier": "Florida", "TripName": "Orlando - Atlanta", "salidas": 2, "millas_fo": 936, "fuel_hip": 604.4360464675434, "servicios": [7090]}, {"Carrier": "Florida", "TripName": "Miami - Tampa - Tallahassee", "salidas": 1, "millas_fo": 582, "fuel_hip": 375.8352340214853, "servicios": [9036]}, {"Carrier": "Florida", "TripName": "Tallahassee - Tampa - Miami", "salidas": 1, "millas_fo": 582, "fuel_hip": 375.8352340214853, "servicios": [9037]}]};
-const BY_SERVICE = [{"Service": 8004, "Carrier": "Florida", "TripName": "Miami - Orlando - Tallahassee", "salidas": 61, "millas_fo": 31415, "fuel_hip": 20286.70769207038, "fuel_hip_pres": 13732.84556816617, "detalle_mensual": [{"Mes": "Abril", "salidas": 9, "millas": 4635, "fuel_hip": 2993.120807026777}, {"Mes": "Enero", "salidas": 9, "millas": 4635, "fuel_hip": 2993.120807026777}, {"Mes": "Febrero", "salidas": 8, "millas": 4120, "fuel_hip": 2660.5518284682466}, {"Mes": "Julio", "salidas": 9, "millas": 4635, "fuel_hip": 2993.120807026777}, {"Mes": "Junio", "salidas": 8, "millas": 4120, "fuel_hip": 2660.5518284682466}, {"Mes": "Marzo", "salidas": 9, "millas": 4635, "fuel_hip": 2993.120807026777}, {"Mes": "Mayo", "salidas": 9, "millas": 4635, "fuel_hip": 2993.120807026777}]}, {"Service": 8005, "Carrier": "Florida", "TripName": "Tallahassee - Orlando - Miami", "salidas": 61, "millas_fo": 31415, "fuel_hip": 20286.70769207038, "fuel_hip_pres": 13732.84556816617, "detalle_mensual": [{"Mes": "Abril", "salidas": 8, "millas": 4120, "fuel_hip": 2660.5518284682466}, {"Mes": "Enero", "salidas": 9, "millas": 4635, "fuel_hip": 2993.120807026777}, {"Mes": "Febrero", "salidas": 8, "millas": 4120, "fuel_hip": 2660.5518284682466}, {"Mes": "Julio", "salidas": 9, "millas": 4635, "fuel_hip": 2993.120807026777}, {"Mes": "Junio", "salidas": 9, "millas": 4635, "fuel_hip": 2993.120807026777}, {"Mes": "Marzo", "salidas": 9, "millas": 4635, "fuel_hip": 2993.120807026777}, {"Mes": "Mayo", "salidas": 9, "millas": 4635, "fuel_hip": 2993.120807026777}]}, {"Service": 8094, "Carrier": "Florida", "TripName": "Miami - Tampa", "salidas": 32, "millas_fo": 9536, "fuel_hip": 6158.0151058915535, "fuel_hip_pres": 4168.595108643406, "detalle_mensual": [{"Mes": "Abril", "salidas": 6, "millas": 1788, "fuel_hip": 1154.6278323546662}, {"Mes": "Enero", "salidas": 9, "millas": 2682, "fuel_hip": 1731.9417485319993}, {"Mes": "Febrero", "salidas": 8, "millas": 2384, "fuel_hip": 1539.5037764728884}, {"Mes": "Marzo", "salidas": 9, "millas": 2682, "fuel_hip": 1731.9417485319993}]}, {"Service": 8095, "Carrier": "Florida", "TripName": "Tampa - Miami", "salidas": 32, "millas_fo": 9536, "fuel_hip": 6158.0151058915535, "fuel_hip_pres": 4168.595108643406, "detalle_mensual": [{"Mes": "Abril", "salidas": 6, "millas": 1788, "fuel_hip": 1154.6278323546662}, {"Mes": "Enero", "salidas": 9, "millas": 2682, "fuel_hip": 1731.9417485319993}, {"Mes": "Febrero", "salidas": 8, "millas": 2384, "fuel_hip": 1539.5037764728884}, {"Mes": "Marzo", "salidas": 9, "millas": 2682, "fuel_hip": 1731.9417485319993}]}, {"Service": 8130, "Carrier": "Texas", "TripName": "Austin - Dallas", "salidas": 32, "millas_fo": 7184, "fuel_hip": 4891.141088346557, "fuel_hip_pres": 3471.643053444661, "detalle_mensual": [{"Mes": "Abril", "salidas": 8, "millas": 1784, "fuel_hip": 1214.615214589401}, {"Mes": "Enero", "salidas": 5, "millas": 1145, "fuel_hip": 779.5596528614709}, {"Mes": "Febrero", "salidas": 8, "millas": 1802, "fuel_hip": 1226.8703008352581}, {"Mes": "Marzo", "salidas": 9, "millas": 2007, "fuel_hip": 1366.442116413076}, {"Mes": "Mayo", "salidas": 2, "millas": 446, "fuel_hip": 303.65380364735023}]}, {"Service": 8061, "Carrier": "Florida", "TripName": "Orlando - Miami", "salidas": 22, "millas_fo": 5540, "fuel_hip": 3577.538138280118, "fuel_hip_pres": 2421.771906657348, "detalle_mensual": [{"Mes": "Enero", "salidas": 8, "millas": 2033, "fuel_hip": 1312.8402590475596}, {"Mes": "Febrero", "salidas": 8, "millas": 2004, "fuel_hip": 1294.113073847176}, {"Mes": "Marzo", "salidas": 6, "millas": 1503, "fuel_hip": 970.5848053853822}]}, {"Service": 8008, "Carrier": "Florida", "TripName": "Miami - Orlando", "salidas": 22, "millas_fo": 5346, "fuel_hip": 3452.259726939623, "fuel_hip_pres": 2336.966175629997, "detalle_mensual": [{"Mes": "Enero", "salidas": 8, "millas": 1944, "fuel_hip": 1255.36717343259}, {"Mes": "Febrero", "salidas": 8, "millas": 1944, "fuel_hip": 1255.36717343259}, {"Mes": "Marzo", "salidas": 6, "millas": 1458, "fuel_hip": 941.5253800744425}]}, {"Service": 8133, "Carrier": "Texas", "TripName": "Dallas - San Antonio", "salidas": 14, "millas_fo": 4324, "fuel_hip": 2943.9440515048036, "fuel_hip_pres": 2089.5579848405782, "detalle_mensual": [{"Mes": "Abril", "salidas": 4, "millas": 1232, "fuel_hip": 838.7925697164474}, {"Mes": "Enero", "salidas": 1, "millas": 312, "fuel_hip": 212.4214949281912}, {"Mes": "Febrero", "salidas": 4, "millas": 1240, "fuel_hip": 844.239274714606}, {"Mes": "Marzo", "salidas": 5, "millas": 1540, "fuel_hip": 1048.4907121455592}]}, {"Service": 8131, "Carrier": "Texas", "TripName": "Dallas - Austin", "salidas": 17, "millas_fo": 3821, "fuel_hip": 2601.4824747455723, "fuel_hip_pres": 1846.4849815161538, "detalle_mensual": [{"Mes": "Abril", "salidas": 4, "millas": 892, "fuel_hip": 607.3076072947005}, {"Mes": "Enero", "salidas": 4, "millas": 916, "fuel_hip": 623.6477222891767}, {"Mes": "Febrero", "salidas": 4, "millas": 898, "fuel_hip": 611.3926360433196}, {"Mes": "Marzo", "salidas": 4, "millas": 892, "fuel_hip": 607.3076072947005}, {"Mes": "Mayo", "salidas": 1, "millas": 223, "fuel_hip": 151.82690182367512}]}, {"Service": 81971, "Carrier": "Texas", "TripName": "Houston - Austin", "salidas": 19, "millas_fo": 3249, "fuel_hip": 2212.043067377222, "fuel_hip_pres": 1570.0679677953372, "detalle_mensual": [{"Mes": "Abril", "salidas": 4, "millas": 684, "fuel_hip": 465.693277342573}, {"Mes": "Enero", "salidas": 4, "millas": 684, "fuel_hip": 465.693277342573}, {"Mes": "Febrero", "salidas": 4, "millas": 684, "fuel_hip": 465.693277342573}, {"Mes": "Marzo", "salidas": 4, "millas": 684, "fuel_hip": 465.693277342573}, {"Mes": "Mayo", "salidas": 3, "millas": 513, "fuel_hip": 349.26995800692976}]}, {"Service": 81961, "Carrier": "Texas", "TripName": "Austin - Houston", "salidas": 19, "millas_fo": 3211, "fuel_hip": 2186.1712186359678, "fuel_hip_pres": 1551.7045997509474, "detalle_mensual": [{"Mes": "Abril", "salidas": 4, "millas": 676, "fuel_hip": 460.2465723444143}, {"Mes": "Enero", "salidas": 4, "millas": 676, "fuel_hip": 460.2465723444143}, {"Mes": "Febrero", "salidas": 4, "millas": 676, "fuel_hip": 460.2465723444143}, {"Mes": "Marzo", "salidas": 4, "millas": 676, "fuel_hip": 460.2465723444143}, {"Mes": "Mayo", "salidas": 3, "millas": 507, "fuel_hip": 345.1849292583107}]}, {"Service": 7090, "Carrier": "Florida", "TripName": "Orlando - Atlanta", "salidas": 2, "millas_fo": 936, "fuel_hip": 604.4360464675434, "fuel_hip_pres": 409.16579505979746, "detalle_mensual": [{"Mes": "Enero", "salidas": 2, "millas": 936, "fuel_hip": 604.4360464675434}]}, {"Service": 7091, "Carrier": "Florida", "TripName": "Atlanta  - Orlando", "salidas": 2, "millas_fo": 936, "fuel_hip": 604.4360464675434, "fuel_hip_pres": 409.16579505979746, "detalle_mensual": [{"Mes": "Enero", "salidas": 2, "millas": 936, "fuel_hip": 604.4360464675434}]}, {"Service": 9037, "Carrier": "Florida", "TripName": "Tallahassee - Tampa - Miami", "salidas": 1, "millas_fo": 582, "fuel_hip": 375.8352340214853, "fuel_hip_pres": 254.41719308205353, "detalle_mensual": [{"Mes": "Enero", "salidas": 1, "millas": 582, "fuel_hip": 375.8352340214853}]}, {"Service": 9036, "Carrier": "Florida", "TripName": "Miami - Tampa - Tallahassee", "salidas": 1, "millas_fo": 582, "fuel_hip": 375.8352340214853, "fuel_hip_pres": 254.41719308205353, "detalle_mensual": [{"Mes": "Enero", "salidas": 1, "millas": 582, "fuel_hip": 375.8352340214853}]}, {"Service": 8083, "Carrier": "Florida", "TripName": "Tallahassee - Orlando - Miami", "salidas": 1, "millas_fo": 515, "fuel_hip": 332.56897855853083, "fuel_hip_pres": 225.12861587157659, "detalle_mensual": [{"Mes": "Enero", "salidas": 1, "millas": 515, "fuel_hip": 332.56897855853083}]}, {"Service": 8031, "Carrier": "Florida", "TripName": "Tampa - Miami", "salidas": 1, "millas_fo": 298, "fuel_hip": 192.43797205911105, "fuel_hip_pres": 130.26859714510644, "detalle_mensual": [{"Mes": "Enero", "salidas": 1, "millas": 298, "fuel_hip": 192.43797205911105}]}, {"Service": 8030, "Carrier": "Florida", "TripName": "Miami - Tampa", "salidas": 1, "millas_fo": 298, "fuel_hip": 192.43797205911105, "fuel_hip_pres": 130.26859714510644, "detalle_mensual": [{"Mes": "Enero", "salidas": 1, "millas": 298, "fuel_hip": 192.43797205911105}]}];
+const RAW = {"monthly":{"Florida":[{"mes":"Enero","costo_pres":98823.68,"costo_real":102189,"millas_pres":226067,"millas_real":204104,"galones_real":28903},{"mes":"Febrero","costo_pres":88667.67,"costo_real":104135,"millas_pres":202835,"millas_real":183242,"galones_real":26588},{"mes":"Marzo","costo_pres":98667.14,"costo_real":155808,"millas_pres":225709,"millas_real":207140,"galones_real":29062},{"mes":"Abril","costo_pres":94737.6,"costo_real":136721,"millas_pres":216720,"millas_real":187115,"galones_real":25068},{"mes":"Mayo","costo_pres":99137.07,"costo_real":133800,"millas_pres":226784,"millas_real":191699,"galones_real":25514},{"mes":"Junio","costo_pres":94737.6,"costo_real":110314,"millas_pres":216720,"millas_real":185087,"galones_real":23053},{"mes":"Julio","costo_pres":98224.79,"costo_real":140007,"millas_pres":224697,"millas_real":187332,"galones_real":30198},{"mes":"Agosto","costo_pres":98485.3277,"costo_real":139977,"millas_pres":225293,"millas_real":180090,"galones_real":25527}],"Texas":[{"mes":"Enero","costo_pres":69856.35,"costo_real":57746,"millas_pres":144556,"millas_real":124887,"galones_real":19247},{"mes":"Febrero","costo_pres":62789.06,"costo_real":66459,"millas_pres":129932,"millas_real":133274,"galones_real":20384},{"mes":"Marzo","costo_pres":69228.56,"costo_real":106473,"millas_pres":143257,"millas_real":146347,"galones_real":22594},{"mes":"Abril","costo_pres":63870.15,"costo_real":111331,"millas_pres":132169,"millas_real":139313,"galones_real":20005},{"mes":"Mayo","costo_pres":64793.09,"costo_real":104268,"millas_pres":134079,"millas_real":138865,"galones_real":19529},{"mes":"Junio","costo_pres":63376.08,"costo_real":94742,"millas_pres":131146.46,"millas_real":131066,"galones_real":21267},{"mes":"Julio","costo_pres":65783.89,"costo_real":106457,"millas_pres":136129,"millas_real":142611,"galones_real":22901},{"mes":"Agosto","costo_pres":66750.9125,"costo_real":121526,"millas_pres":138132,"millas_real":147757,"galones_real":23157}]},"fo":[{"s":"F","m":0,"v":"8080","mi":515.0,"r":"B"},{"s":"F","m":0,"v":"7038","mi":298.0,"r":"B"},{"s":"F","m":0,"v":"8083","mi":515.0,"r":"B"},{"s":"F","m":0,"v":"8080","mi":515.0,"r":"B"},{"s":"F","m":0,"v":"8083","mi":515.0,"r":"B"},{"s":"F","m":0,"v":"8080","mi":515.0,"r":"B"},{"s":"F","m":0,"v":"8031","mi":298.0,"r":"B"},{"s":"F","m":0,"v":"8080","mi":515.0,"r":"B"},{"s":"T","m":0,"v":"8155","mi":207.0,"r":"B"},{"s":"T","m":0,"v":"8185","mi":165.0,"r":"B"},{"s":"T","m":0,"v":"8186","mi":171.0,"r":"B"},{"s":"F","m":0,"v":"8022","mi":551.0,"r":"B"},{"s":"F","m":0,"v":"9036","mi":582.0,"r":"B"},{"s":"F","m":0,"v":"8022","mi":529.0,"r":"B"},{"s":"T","m":0,"v":"7145","mi":167.0,"r":"B"},{"s":"F","m":0,"v":"8023","mi":522.0,"r":"B"},{"s":"F","m":0,"v":"9037","mi":582.0,"r":"B"},{"s":"F","m":0,"v":"8023","mi":522.0,"r":"B"},{"s":"F","m":0,"v":"8022","mi":529.0,"r":"B"},{"s":"T","m":0,"v":"9114","mi":334.0,"r":"D"},{"s":"T","m":0,"v":"9113","mi":313.0,"r":"D"},{"s":"F","m":0,"v":"8023","mi":533.0,"r":"B"},{"s":"F","m":0,"v":"9036","mi":582.0,"r":"B"},{"s":"F","m":0,"v":"8023","mi":533.0,"r":"B"},{"s":"F","m":0,"v":"8022","mi":529.0,"r":"B"},{"s":"T","m":0,"v":"8199","mi":167.0,"r":"B"},{"s":"T","m":0,"v":"9174","mi":272.0,"r":"B"},{"s":"T","m":0,"v":"9173","mi":301.0,"r":"B"},{"s":"T","m":1,"v":"9113","mi":272.0,"r":"D"},{"s":"T","m":1,"v":"9114","mi":273.0,"r":"D"},{"s":"T","m":1,"v":"8183","mi":167.0,"r":"D"},{"s":"T","m":1,"v":"8184","mi":167.0,"r":"D"},{"s":"F","m":1,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":1,"v":"7060","mi":515.0,"r":"D"},{"s":"T","m":1,"v":"9144","mi":272.0,"r":"D"},{"s":"F","m":1,"v":"8022","mi":529.0,"r":"D"},{"s":"F","m":1,"v":"8023","mi":522.0,"r":"D"},{"s":"T","m":1,"v":"8183","mi":167.0,"r":"B"},{"s":"T","m":1,"v":"8184","mi":167.0,"r":"B"},{"s":"F","m":1,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":1,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":1,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":1,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":1,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":1,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":1,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":1,"v":"8023","mi":533.0,"r":"D"},{"s":"F","m":1,"v":"8022","mi":529.0,"r":"D"},{"s":"T","m":1,"v":"8155","mi":203.0,"r":"B"},{"s":"T","m":1,"v":"8187","mi":164.0,"r":"D"},{"s":"T","m":1,"v":"8188","mi":165.0,"r":"D"},{"s":"F","m":2,"v":"8022","mi":529.0,"r":"D"},{"s":"F","m":2,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":2,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":2,"v":"8023","mi":522.0,"r":"D"},{"s":"T","m":2,"v":"7117","mi":268.0,"r":"B"},{"s":"T","m":2,"v":"7118","mi":268.0,"r":"B"},{"s":"F","m":2,"v":"8080","mi":515.0,"r":"B"},{"s":"F","m":2,"v":"8083","mi":515.0,"r":"B"},{"s":"F","m":2,"v":"8022","mi":529.0,"r":"D"},{"s":"F","m":2,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":2,"v":"8022","mi":551.0,"r":"D"},{"s":"T","m":2,"v":"7118","mi":268.0,"r":"B"},{"s":"F","m":2,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":2,"v":"9036","mi":582.0,"r":"B"},{"s":"F","m":2,"v":"9037","mi":582.0,"r":"B"},{"s":"F","m":2,"v":"9036","mi":582.0,"r":"D"},{"s":"F","m":2,"v":"9037","mi":582.0,"r":"D"},{"s":"F","m":2,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":2,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":3,"v":"9036","mi":582.0,"r":"D"},{"s":"F","m":3,"v":"9036","mi":582.0,"r":"D"},{"s":"F","m":3,"v":"9037","mi":582.0,"r":"D"},{"s":"F","m":3,"v":"9037","mi":582.0,"r":"D"},{"s":"T","m":3,"v":"9174","mi":268.0,"r":"D"},{"s":"T","m":3,"v":"9173","mi":297.0,"r":"D"},{"s":"F","m":3,"v":"9036","mi":582.0,"r":"D"},{"s":"T","m":3,"v":"9114","mi":269.0,"r":"D"},{"s":"T","m":3,"v":"9113","mi":268.0,"r":"D"},{"s":"F","m":3,"v":"9037","mi":582.0,"r":"D"},{"s":"F","m":3,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":3,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":3,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":3,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":3,"v":"9036","mi":582.0,"r":"D"},{"s":"T","m":3,"v":"9112","mi":501.0,"r":"B"},{"s":"T","m":3,"v":"9111","mi":499.0,"r":"B"},{"s":"F","m":3,"v":"9037","mi":582.0,"r":"D"},{"s":"F","m":3,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":3,"v":"8083","mi":515.0,"r":"D"},{"s":"T","m":3,"v":"9112","mi":501.0,"r":"B"},{"s":"T","m":3,"v":"9111","mi":503.0,"r":"B"},{"s":"F","m":3,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":3,"v":"8023","mi":522.0,"r":"D"},{"s":"T","m":3,"v":"9112","mi":501.0,"r":"B"},{"s":"T","m":3,"v":"9111","mi":499.0,"r":"B"},{"s":"F","m":3,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":3,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":3,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":3,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":3,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":3,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":3,"v":"9016","mi":515.0,"r":"B"},{"s":"F","m":3,"v":"9017","mi":516.0,"r":"B"},{"s":"F","m":4,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"9036","mi":582.0,"r":"D"},{"s":"F","m":4,"v":"9037","mi":582.0,"r":"D"},{"s":"F","m":4,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"8080","mi":515.0,"r":"B"},{"s":"F","m":4,"v":"8080","mi":515.0,"r":"B"},{"s":"T","m":4,"v":"9114","mi":269.0,"r":"D"},{"s":"T","m":4,"v":"9113","mi":268.0,"r":"D"},{"s":"T","m":4,"v":"8182","mi":165.0,"r":"D"},{"s":"F","m":4,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":4,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":4,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":4,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":4,"v":"9036","mi":582.0,"r":"D"},{"s":"T","m":4,"v":"9113","mi":297.0,"r":"D"},{"s":"T","m":4,"v":"9114","mi":269.0,"r":"D"},{"s":"F","m":4,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":5,"v":"9037","mi":582.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"B"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"B"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":5,"v":"8022","mi":529.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"T","m":5,"v":"9114","mi":269.0,"r":"B"},{"s":"T","m":5,"v":"9113","mi":268.0,"r":"B"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7001","mi":239.0,"r":"D"},{"s":"F","m":5,"v":"7000","mi":240.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7001","mi":239.0,"r":"D"},{"s":"F","m":5,"v":"7000","mi":240.0,"r":"D"},{"s":"F","m":5,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7001","mi":239.0,"r":"D"},{"s":"F","m":5,"v":"7000","mi":240.0,"r":"D"},{"s":"T","m":5,"v":"9144","mi":268.0,"r":"B"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":5,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"T","m":5,"v":"8187","mi":164.0,"r":"B"},{"s":"T","m":5,"v":"8188","mi":165.0,"r":"B"},{"s":"F","m":5,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7001","mi":239.0,"r":"D"},{"s":"F","m":5,"v":"7000","mi":240.0,"r":"D"},{"s":"T","m":5,"v":"7172","mi":268.0,"r":"B"},{"s":"T","m":5,"v":"7173","mi":268.0,"r":"B"},{"s":"F","m":5,"v":"7001","mi":239.0,"r":"D"},{"s":"F","m":5,"v":"7000","mi":240.0,"r":"D"},{"s":"F","m":5,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"T","m":5,"v":"8181","mi":167.0,"r":"B"},{"s":"T","m":5,"v":"8182","mi":165.0,"r":"B"},{"s":"F","m":5,"v":"8023","mi":533.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":5,"v":"9016","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":5,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7001","mi":239.0,"r":"D"},{"s":"F","m":6,"v":"7000","mi":240.0,"r":"D"},{"s":"F","m":6,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"T","m":6,"v":"7144","mi":167.0,"r":"B"},{"s":"T","m":6,"v":"7145","mi":167.0,"r":"B"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":6,"v":"8023","mi":522.0,"r":"D"},{"s":"T","m":6,"v":"9173","mi":297.0,"r":"D"},{"s":"T","m":6,"v":"9174","mi":268.0,"r":"D"},{"s":"F","m":6,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7037","mi":298.0,"r":"D"},{"s":"F","m":6,"v":"7038","mi":298.0,"r":"D"},{"s":"F","m":6,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":6,"v":"8023","mi":522.0,"r":"D"},{"s":"T","m":6,"v":"8130","mi":223.0,"r":"D"},{"s":"T","m":6,"v":"8133","mi":223.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"T","m":6,"v":"7110","mi":223.0,"r":"D"},{"s":"T","m":6,"v":"7110","mi":223.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8022","mi":551.0,"r":"D"},{"s":"F","m":6,"v":"8023","mi":522.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"9037","mi":582.0,"r":"B"},{"s":"F","m":6,"v":"8022","mi":529.0,"r":"B"},{"s":"F","m":6,"v":"9036","mi":582.0,"r":"B"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7063","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"7060","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":6,"v":"9017/9016","mi":516.0,"r":"D"},{"s":"F","m":7,"v":"9017","mi":516.0,"r":"D"},{"s":"F","m":7,"v":"8022/8023","mi":551.0,"r":"D"},{"s":"F","m":7,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"7063/7060","mi":515.0,"r":"D"},{"s":"T","m":7,"v":"9112","mi":501.0,"r":"B"},{"s":"T","m":7,"v":"9111","mi":499.0,"r":"B"},{"s":"F","m":7,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8022/8023","mi":529.0,"r":"D"},{"s":"F","m":7,"v":"8022/8023","mi":529.0,"r":"D"},{"s":"F","m":7,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8080","mi":537.0,"r":"D"},{"s":"F","m":7,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8080","mi":515.0,"r":"B"},{"s":"F","m":7,"v":"7063/7060","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"7060/7063","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"7063/7060","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"7060/7063","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"9016/9017","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8022/8023","mi":529.0,"r":"D"},{"s":"F","m":7,"v":"7001/7000","mi":239.0,"r":"D"},{"s":"F","m":7,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"9016/9017","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8022/8023","mi":529.0,"r":"D"},{"s":"T","m":7,"v":"9143","mi":269.0,"r":"B"},{"s":"T","m":7,"v":"7110","mi":223.0,"r":"B"},{"s":"T","m":7,"v":"7113","mi":223.0,"r":"B"},{"s":"F","m":7,"v":"8080","mi":537.0,"r":"D"},{"s":"F","m":7,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8022/8023","mi":551.0,"r":"D"},{"s":"F","m":7,"v":"9016/9017","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8022","mi":551.0,"r":"B"},{"s":"T","m":7,"v":"9112","mi":501.0,"r":"B"},{"s":"T","m":7,"v":"9111","mi":499.0,"r":"B"},{"s":"F","m":7,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"9016/9017","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"7063/7060","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"9016/9017","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8080","mi":515.0,"r":"B"},{"s":"F","m":7,"v":"7063/7060","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"9016/9017","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"7060/7063","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"7060/7063","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8022/8023","mi":529.0,"r":"D"},{"s":"F","m":7,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8080","mi":537.0,"r":"D"},{"s":"F","m":7,"v":"8083","mi":515.0,"r":"D"},{"s":"T","m":7,"v":"9112","mi":501.0,"r":"B"},{"s":"T","m":7,"v":"9111","mi":499.0,"r":"B"},{"s":"T","m":7,"v":"8115/8114","mi":223.0,"r":"D"},{"s":"F","m":7,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"9036","mi":582.0,"r":"D"},{"s":"F","m":7,"v":"9016/9017","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"9037","mi":582.0,"r":"D"},{"s":"F","m":7,"v":"9016/9017","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8080","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"8080","mi":537.0,"r":"D"},{"s":"F","m":7,"v":"8083","mi":515.0,"r":"D"},{"s":"F","m":7,"v":"7060/7063","mi":515.0,"r":"D"},{"s":"T","m":7,"v":"8115/8114","mi":223.0,"r":"D"},{"s":"F","m":7,"v":"8083","mi":515.0,"r":"D"},{"s":"T","m":7,"v":"7190/7191","mi":296.0,"r":"D"}],"names":{"8080":"Miami - Orlando - Tallahassee","7038":"Miami - Tampa","8083":"Tallahassee - Orlando - Miami","8031":"Tampa - Miami","8155":"Dallas - TAMU","8185":"Houston - Austin","8186":"Austin - Houston","8022":"Miami - Orlando - Tallahassee","9036":"Miami - Tampa - Tallahassee","7145":"Houston - Austin","8023":"Tallahassee - Orlando - Miami","9037":"Tallahassee - Tampa - Miami","9114":"Houston - Dallas","9113":"Dallas - Houston","8199":"Houston - Austin","9174":"Houston - Dallas","9173":"Dallas - Houston","8183":"Houston - Austin","8184":"Austin - Houston","7063":"Tallahassee - Orlando - Miami","7060":"Miami - Orlando - Tallahassee","9144":"Houston - Dallas","9017":"Tallahassee - Orlando - Miami","9016":"Miami - Orlando - Tallahassee","8187":"Houston - Austin","8188":"Austin - Houston","7117":"Dallas - Houston","7118":"Houston - Dallas","9112":"Houston - San Antonio - Dallas","9111":"Dallas - San Antonio - Houston","8182":"Austin - Houston","7001":"Orlando - Miami","7000":"Miami - Orlando","7172":"Houston - Dallas","7173":"Dallas - Houston","8181":"Houston - Austin","7144":"Austin - Houston","7037":"Tampa - Miami","8130":"Austin - Dallas","8133":"Dallas - Austin","7110":"Austin - Dallas","9017/9016":"Orlando - Miami - Orlando (ida y vuelta)","8022/8023":"Orlando - Tallahassee - Orlando (ida y vuelta)","7063/7060":"Orlando - Miami - Orlando (ida y vuelta)","7060/7063":"Orlando - Tallahassee - Orlando (ida y vuelta)","9016/9017":"Orlando - Tallahassee - Orlando (ida y vuelta)","7001/7000":"Miami - Orlando - Miami (ida y vuelta)","9143":"Dallas - Houston","7113":"Dallas - Austin","8115/8114":"Dallas - Austin - Dallas (ida y vuelta)","7190/7191":"Dallas - Oklahoma (OSU) - Dallas (ida y vuelta)"}};
+const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto"];
+const ST = {F:'Florida', T:'Texas'};
+const MPG_PRES = {Florida:7.7, Texas:7.3}, PREF = 3.3;
+const KEYS = ['costo_pres','costo_real','millas_pres','millas_real','galones_real'];
+const P = {mode:'acum', idx:MESES.length-1};
 
 const fmtMoney = n => '$' + Math.round(Math.abs(n)).toLocaleString('en-US');
-const fmtMoney2 = n => '$' + Math.abs(n).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+const fmtSigned = n => (n>=0?'+':'−') + fmtMoney(n);
 const fmtPct = n => (n>=0?'+':'') + n.toFixed(1) + '%';
 const fmtRate = n => '$' + n.toFixed(4);
+const fmtInt = n => Math.round(n).toLocaleString('en-US');
+const low = s => s.toLowerCase();
+
+/* ---------------- period helpers ---------------- */
+function periodMonths(){ return P.mode==='acum' ? MESES.slice(0,P.idx+1) : [MESES[P.idx]]; }
+function shownMonths(){ return MESES.slice(0,P.idx+1); }
+function pText(){
+  const m = low(MESES[P.idx]);
+  if(P.mode==='mes' || P.idx===0) return {short: MESES[P.idx].slice(0,3), long:`${m} 2026`, entre:`en ${m}`, desc:`${P.mode==='mes'?'Mes':'Acumulado'} · ${MESES[P.idx]} 2026`};
+  return {short:`Ene–${MESES[P.idx].slice(0,3)}`, long:`enero–${m} 2026`, entre:`entre enero y ${m}`, desc:`Acumulado · Enero–${MESES[P.idx]} 2026`};
+}
+
+/* ---------------- compute ---------------- */
+function enrich(r){ const o={...r}; o.var_d=o.costo_real-o.costo_pres; o.var_pct=o.var_d/o.costo_pres*100; o.mpg_real=o.millas_real/o.galones_real; o.precio_galon=o.costo_real/o.galones_real; o.milla_pres_rate=o.costo_pres/o.millas_pres; o.milla_real_rate=o.costo_real/o.millas_real; return o; }
+function sumRows(rows, mes){ const o={mes}; KEYS.forEach(k=>o[k]=rows.reduce((a,r)=>a+r[k],0)); return o; }
+const sum = (arr, f) => arr.reduce((a,x)=>a+f(x),0);
+
+function compute(){
+  const shown = shownMonths(), pm = periodMonths();
+  const D = {shown, pm, monthly:{}, per:{}, decomp:{}, hfm:{}, hfy:{}};
+  ['Florida','Texas'].forEach(s=>{
+    const rows = RAW.monthly[s];
+    D.monthly[s] = rows.filter(r=>shown.includes(r.mes)).map(enrich);
+    const inP = rows.filter(r=>pm.includes(r.mes)).map(enrich);
+    D.per[s] = enrich(sumRows(inP,'Período'));
+    let ip=0, im=0, ie=0; const mp = MPG_PRES[s];
+    inP.forEach(r=>{ const Pr=r.precio_galon, Gp=r.millas_pres/mp; ip+=(Pr-PREF)*Gp; im+=(r.millas_real-r.millas_pres)/mp*Pr; ie+=(r.galones_real-r.millas_real/mp)*Pr; });
+    D.decomp[s] = {imp_precio:ip, imp_millas:im, imp_eficiencia:ie, imp_total:ip+im+ie};
+  });
+  D.monthly.Consolidado = shown.map((m,i)=>enrich(sumRows([D.monthly.Florida[i], D.monthly.Texas[i]], m)));
+  D.per.Consolidado = enrich(sumRows([D.per.Florida, D.per.Texas],'Período'));
+  D.decomp.Consolidado = {}; Object.keys(D.decomp.Florida).forEach(k=>D.decomp.Consolidado[k]=D.decomp.Florida[k]+D.decomp.Texas[k]);
+
+  const rate={}, prate={}, mrate={};
+  ['Florida','Texas'].forEach(s=>{ rate[s]=D.per[s].milla_real_rate; prate[s]=D.per[s].milla_pres_rate; mrate[s]={}; D.monthly[s].forEach(r=>mrate[s][r.mes]=r.milla_real_rate); });
+  D.rate = rate;
+  const all = RAW.fo.map(r=>({state:ST[r.s], mes:MESES[r.m], svc:r.v, miles:r.mi, reason:r.r==='B'?'Bus':'Driver', name:RAW.names[String(r.v)]}));
+  const recs = all.filter(r=>pm.includes(r.mes)).map(r=>({...r, fuel:r.miles*rate[r.state], fuelp:r.miles*prate[r.state], gal:r.miles/D.per[r.state].mpg_real}));
+  D.recs = recs;
+  ['Florida','Texas'].forEach(s=>{
+    const sub = recs.filter(r=>r.state===s);
+    D.hfy[s] = {millas_fo:sum(sub,r=>r.miles), fuel_hip_real:sum(sub,r=>r.fuel), fuel_hip_pres:sum(sub,r=>r.fuelp), galones_hip:sum(sub,r=>r.gal),
+      mpg_usado:D.per[s].mpg_real, precio_usado:D.per[s].precio_galon, salidas:sub.length, bus:sub.filter(r=>r.reason==='Bus').length, driver:sub.filter(r=>r.reason==='Driver').length};
+    D.hfm[s] = shown.map(m=>{ const mi=sum(all.filter(r=>r.state===s&&r.mes===m), r=>r.miles); const rt = P.mode==='acum'?rate[s]:mrate[s][m]; return {mes:m, millas_fo:mi, fuel_hip_real:mi*rt}; });
+  });
+  D.hfm.Consolidado = shown.map((m,i)=>({mes:m, millas_fo:D.hfm.Florida[i].millas_fo+D.hfm.Texas[i].millas_fo, fuel_hip_real:D.hfm.Florida[i].fuel_hip_real+D.hfm.Texas[i].fuel_hip_real}));
+  D.hfy.Consolidado = {}; ['millas_fo','fuel_hip_real','fuel_hip_pres','galones_hip','salidas','bus','driver'].forEach(k=>D.hfy.Consolidado[k]=D.hfy.Florida[k]+D.hfy.Texas[k]);
+
+  const groupBy = (arr, keyf) => { const m=new Map(); arr.forEach(x=>{const k=keyf(x); if(!m.has(k)) m.set(k,[]); m.get(k).push(x);}); return m; };
+  D.routes = [...groupBy(recs, r=>r.state+'|'+r.name)].map(([k,g])=>{
+    const bySvc=[...groupBy(g,r=>r.svc)].map(([sv,h])=>[sv,sum(h,r=>r.fuel)]).sort((a,b)=>b[1]-a[1]).map(x=>x[0]);
+    return {Carrier:g[0].state, TripName:g[0].name, salidas:g.length, millas_fo:sum(g,r=>r.miles), fuel_hip:sum(g,r=>r.fuel), servicios:bySvc};
+  }).sort((a,b)=>b.fuel_hip-a.fuel_hip);
+  D.services = [...groupBy(recs, r=>r.state+'|'+r.svc)].map(([k,g])=>({
+    Service:g[0].svc, Carrier:g[0].state, TripName:g[0].name, salidas:g.length, millas_fo:sum(g,r=>r.miles), fuel_hip:sum(g,r=>r.fuel), fuel_hip_pres:sum(g,r=>r.fuelp),
+    bus:g.filter(r=>r.reason==='Bus').length, driver:g.filter(r=>r.reason==='Driver').length,
+    detalle_mensual:[...groupBy(g,r=>r.mes)].map(([m,h])=>({Mes:m, salidas:h.length, millas:sum(h,r=>r.miles), fuel_hip:sum(h,r=>r.fuel)}))
+  })).sort((a,b)=>b.fuel_hip-a.fuel_hip);
+  return D;
+}
 
 /* ---------------- SVG helpers ---------------- */
 const SVGNS = 'http://www.w3.org/2000/svg';
 function svgEl(tag, attrs){ const el = document.createElementNS(SVGNS, tag); for(const k in attrs) el.setAttribute(k, attrs[k]); return el; }
-function ensureTooltip(holder){
-  let tip = holder.querySelector('.chart-tooltip');
-  if(!tip){ tip = document.createElement('div'); tip.className = 'chart-tooltip'; holder.style.position = 'relative'; holder.appendChild(tip); }
-  return tip;
-}
-function showTip(holder, tip, x, y, html){ tip.innerHTML = html; tip.style.left = x+'px'; tip.style.top = (y-8)+'px'; tip.classList.add('show'); }
+function ensureTooltip(holder){ let tip = holder.querySelector('.chart-tooltip'); if(!tip){ tip=document.createElement('div'); tip.className='chart-tooltip'; holder.style.position='relative'; holder.appendChild(tip);} return tip; }
+function showTip(holder, tip, x, y, html){ tip.innerHTML=html; tip.style.left=x+'px'; tip.style.top=(y-8)+'px'; tip.classList.add('show'); }
 function hideTip(tip){ tip.classList.remove('show'); }
+function bindTips(holder, svg){ const tip=ensureTooltip(holder); svg.querySelectorAll('.bar-hit').forEach(el=>{ el.addEventListener('mousemove',e=>{const r=holder.getBoundingClientRect(); showTip(holder,tip,e.clientX-r.left,e.clientY-r.top,el.dataset.tip);}); el.addEventListener('mouseleave',()=>hideTip(tip)); }); }
+const dim = (mes, hl) => (hl && mes!==hl) ? 0.25 : 1;
 
-/* Grouped bar (costo pres/real) + line ($/galón real) */
-function renderCostChart(holder, rows){
-  holder.innerHTML = '';
-  const W = 900, H = 320, padL = 60, padR = 46, padT = 20, padB = 34;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
-  const svg = svgEl('svg', {viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet'});
-  const maxVal = Math.max(...rows.map(r=>Math.max(r.costo_pres, r.costo_real)), 1);
-  const maxPrice = Math.max(...rows.map(r=>r.precio_galon), 1) * 1.25;
-
-  const ySteps = 4;
-  for(let i=0;i<=ySteps;i++){
-    const val = maxVal * i/ySteps;
-    const y = padT + plotH - (val/maxVal)*plotH;
-    svg.appendChild(svgEl('line', {x1:padL, x2:W-padR, y1:y, y2:y, stroke:'#ECEAEB', 'stroke-width':1}));
-    const t = svgEl('text', {x:padL-8, y:y+4, 'text-anchor':'end', 'font-size':11, fill:'#5B5B60'});
-    t.textContent = '$'+Math.round(val/1000)+'k';
-    svg.appendChild(t);
-  }
-
-  const groupW = plotW / rows.length;
-  const barW = groupW * 0.28;
-  const linePts = [];
-
-  rows.forEach((r, i)=>{
-    const gx = padL + groupW*i;
-    const cx = gx + groupW/2;
-    const hPres = (r.costo_pres/maxVal)*plotH;
-    const bx1 = cx - barW - 3;
-    const by1 = padT + plotH - hPres;
-    const rect1 = svgEl('rect', {x:bx1, y:by1, width:barW, height:Math.max(hPres,0), rx:2, fill:'#181818', class:'bar-hit'});
-    rect1.dataset.tip = `${r.mes} · Presupuestado: ${fmtMoney(r.costo_pres)}`;
-    svg.appendChild(rect1);
-    const hReal = (r.costo_real/maxVal)*plotH;
-    const bx2 = cx + 3;
-    const by2 = padT + plotH - hReal;
-    const rect2 = svgEl('rect', {x:bx2, y:by2, width:barW, height:Math.max(hReal,0), rx:2, fill:'#C8102E', class:'bar-hit'});
-    rect2.dataset.tip = `${r.mes} · Real: ${fmtMoney(r.costo_real)}`;
-    svg.appendChild(rect2);
-    const lbl = svgEl('text', {x:cx, y:H-12, 'text-anchor':'middle', 'font-size':11.5, fill:'#5B5B60'});
-    lbl.textContent = r.mes.slice(0,3);
-    svg.appendChild(lbl);
-    const priceY = padT + plotH - (r.precio_galon/maxPrice)*plotH;
-    linePts.push([cx, priceY, r]);
+function renderCostChart(holder, rows, hl){
+  holder.innerHTML='';
+  const W=900,H=320,padL=60,padR=46,padT=20,padB=34, plotW=W-padL-padR, plotH=H-padT-padB;
+  const svg=svgEl('svg',{viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet'});
+  const maxVal=Math.max(...rows.map(r=>Math.max(r.costo_pres,r.costo_real)),1);
+  const maxPrice=Math.max(...rows.map(r=>r.precio_galon),1)*1.25;
+  for(let i=0;i<=4;i++){ const val=maxVal*i/4, y=padT+plotH-(val/maxVal)*plotH;
+    svg.appendChild(svgEl('line',{x1:padL,x2:W-padR,y1:y,y2:y,stroke:'#ECEAEB','stroke-width':1}));
+    const t=svgEl('text',{x:padL-8,y:y+4,'text-anchor':'end','font-size':11,fill:'#5B5B60'}); t.textContent='$'+Math.round(val/1000)+'k'; svg.appendChild(t); }
+  const groupW=plotW/Math.max(rows.length,1), barW=Math.min(groupW*0.28,60), pts=[];
+  rows.forEach((r,i)=>{
+    const cx=padL+groupW*i+groupW/2, op=dim(r.mes,hl);
+    const h1=(r.costo_pres/maxVal)*plotH, h2=(r.costo_real/maxVal)*plotH;
+    const a=svgEl('rect',{x:cx-barW-3,y:padT+plotH-h1,width:barW,height:Math.max(h1,0),rx:2,fill:'#181818',class:'bar-hit',opacity:op}); a.dataset.tip=`${r.mes} · Presupuestado: ${fmtMoney(r.costo_pres)}`; svg.appendChild(a);
+    const b=svgEl('rect',{x:cx+3,y:padT+plotH-h2,width:barW,height:Math.max(h2,0),rx:2,fill:'#C8102E',class:'bar-hit',opacity:op}); b.dataset.tip=`${r.mes} · Real: ${fmtMoney(r.costo_real)}`; svg.appendChild(b);
+    const l=svgEl('text',{x:cx,y:H-12,'text-anchor':'middle','font-size':11.5,fill:'#5B5B60','font-weight':(hl&&r.mes===hl)?700:400}); l.textContent=r.mes.slice(0,3); svg.appendChild(l);
+    pts.push([cx, padT+plotH-(r.precio_galon/maxPrice)*plotH, r]);
   });
-
-  const poly = svgEl('polyline', {points: linePts.map(p=>p[0]+','+p[1]).join(' '), fill:'none', stroke:'#5B5B60', 'stroke-width':1.6, 'stroke-dasharray':'5,3'});
-  svg.appendChild(poly);
-  linePts.forEach(([x,y,r])=>{
-    const dot = svgEl('circle', {cx:x, cy:y, r:3.6, fill:'#5B5B60', class:'bar-hit'});
-    dot.dataset.tip = `${r.mes} · $/galón real: ${r.precio_galon.toFixed(2)}`;
-    svg.appendChild(dot);
-  });
-
-  holder.appendChild(svg);
-  const tip = ensureTooltip(holder);
-  svg.querySelectorAll('.bar-hit').forEach(el=>{
-    el.addEventListener('mousemove', (e)=>{ const rect = holder.getBoundingClientRect(); showTip(holder, tip, e.clientX-rect.left, e.clientY-rect.top, el.dataset.tip); });
-    el.addEventListener('mouseleave', ()=>hideTip(tip));
-  });
+  if(pts.length>1) svg.appendChild(svgEl('polyline',{points:pts.map(p=>p[0]+','+p[1]).join(' '),fill:'none',stroke:'#5B5B60','stroke-width':1.6,'stroke-dasharray':'5,3'}));
+  pts.forEach(([x,y,r])=>{ const d=svgEl('circle',{cx:x,cy:y,r:3.6,fill:'#5B5B60',class:'bar-hit',opacity:dim(r.mes,hl)}); d.dataset.tip=`${r.mes} · $/galón real: ${r.precio_galon.toFixed(2)}`; svg.appendChild(d); });
+  holder.appendChild(svg); bindTips(holder, svg);
 }
 
-/* Single-series bar chart for hidden fuel */
-function renderHiddenFuelChart(holder, rows){
-  holder.innerHTML = '';
-  const W = 900, H = 260, padL = 60, padR = 30, padT = 20, padB = 34;
-  const plotW = W - padL - padR, plotH = H - padT - padB;
-  const svg = svgEl('svg', {viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet'});
-  const maxVal = Math.max(...rows.map(r=>r.fuel_hip_real), 1);
-
-  const ySteps = 4;
-  for(let i=0;i<=ySteps;i++){
-    const val = maxVal * i/ySteps;
-    const y = padT + plotH - (val/maxVal)*plotH;
-    svg.appendChild(svgEl('line', {x1:padL, x2:W-padR, y1:y, y2:y, stroke:'#ECEAEB', 'stroke-width':1}));
-    const t = svgEl('text', {x:padL-8, y:y+4, 'text-anchor':'end', 'font-size':11, fill:'#5B5B60'});
-    t.textContent = '$'+Math.round(val/1000)+'k';
-    svg.appendChild(t);
-  }
-
-  const groupW = plotW / rows.length;
-  const barW = groupW * 0.42;
-
-  rows.forEach((r, i)=>{
-    const cx = padL + groupW*i + groupW/2;
-    const h = (r.fuel_hip_real/maxVal)*plotH;
-    const bx = cx - barW/2;
-    const by = padT + plotH - h;
-    const rect = svgEl('rect', {x:bx, y:by, width:barW, height:Math.max(h,0), rx:2, fill:'#C8102E', class:'bar-hit'});
-    rect.dataset.tip = `${r.mes} · Fuel hipotético: ${fmtMoney(r.fuel_hip_real)} · ${r.millas_fo.toLocaleString('en-US')} millas`;
-    svg.appendChild(rect);
-    const lbl = svgEl('text', {x:cx, y:H-12, 'text-anchor':'middle', 'font-size':11.5, fill:'#5B5B60'});
-    lbl.textContent = r.mes.slice(0,3);
-    svg.appendChild(lbl);
+function renderHiddenFuelChart(holder, rows, hl){
+  holder.innerHTML='';
+  const W=900,H=260,padL=60,padR=30,padT=20,padB=34, plotW=W-padL-padR, plotH=H-padT-padB;
+  const svg=svgEl('svg',{viewBox:`0 0 ${W} ${H}`, preserveAspectRatio:'xMidYMid meet'});
+  const maxVal=Math.max(...rows.map(r=>r.fuel_hip_real),1);
+  for(let i=0;i<=4;i++){ const val=maxVal*i/4, y=padT+plotH-(val/maxVal)*plotH;
+    svg.appendChild(svgEl('line',{x1:padL,x2:W-padR,y1:y,y2:y,stroke:'#ECEAEB','stroke-width':1}));
+    const t=svgEl('text',{x:padL-8,y:y+4,'text-anchor':'end','font-size':11,fill:'#5B5B60'}); t.textContent='$'+(maxVal<4000?(val/1000).toFixed(1):Math.round(val/1000))+'k'; svg.appendChild(t); }
+  const groupW=plotW/Math.max(rows.length,1), barW=Math.min(groupW*0.42,90);
+  rows.forEach((r,i)=>{
+    const cx=padL+groupW*i+groupW/2, h=(r.fuel_hip_real/maxVal)*plotH;
+    const rect=svgEl('rect',{x:cx-barW/2,y:padT+plotH-h,width:barW,height:Math.max(h,0),rx:2,fill:'#C8102E',class:'bar-hit',opacity:dim(r.mes,hl)});
+    rect.dataset.tip=`${r.mes} · Fuel hipotético: ${fmtMoney(r.fuel_hip_real)} · ${fmtInt(r.millas_fo)} millas`; svg.appendChild(rect);
+    const l=svgEl('text',{x:cx,y:H-12,'text-anchor':'middle','font-size':11.5,fill:'#5B5B60','font-weight':(hl&&r.mes===hl)?700:400}); l.textContent=r.mes.slice(0,3); svg.appendChild(l);
   });
-
-  holder.appendChild(svg);
-  const tip = ensureTooltip(holder);
-  svg.querySelectorAll('.bar-hit').forEach(el=>{
-    el.addEventListener('mousemove', (e)=>{ const rect = holder.getBoundingClientRect(); showTip(holder, tip, e.clientX-rect.left, e.clientY-rect.top, el.dataset.tip); });
-    el.addEventListener('mouseleave', ()=>hideTip(tip));
-  });
+  holder.appendChild(svg); bindTips(holder, svg);
 }
 
-/* ---------------- decomposition bars ---------------- */
 function renderDecomp(container, d){
-  container.innerHTML = '';
-  const items = [
-    {label:'Precio', sub:'vs. $3.30 ref.', val:d.imp_precio},
-    {label:'Kilometraje', sub:'vs. millas ppto.', val:d.imp_millas},
-    {label:'Eficiencia (MPG)', sub:'vs. MPG ppto.', val:d.imp_eficiencia},
-    {label:'Total', sub:'suma de los 3', val:d.imp_total, isTotal:true},
-  ];
-  const maxAbs = Math.max(...items.map(i=>Math.abs(i.val)), 1);
+  container.innerHTML='';
+  const items=[{label:'Precio',sub:'vs. $3.30 ref.',val:d.imp_precio},{label:'Kilometraje',sub:'vs. millas ppto.',val:d.imp_millas},{label:'Eficiencia (MPG)',sub:'vs. MPG ppto.',val:d.imp_eficiencia},{label:'Total',sub:'suma de los 3',val:d.imp_total,isTotal:true}];
+  const maxAbs=Math.max(...items.map(i=>Math.abs(i.val)),1);
   items.forEach(it=>{
-    const row = document.createElement('div');
-    row.className = 'decomp-row';
-    const pctWidth = (Math.abs(it.val)/maxAbs)*49;
-    const positive = it.val >= 0;
-    const color = it.isTotal ? '#181818' : (positive ? '#C8102E' : '#1E8A5F');
-    const left = positive ? 50 : (50-pctWidth);
-    row.innerHTML = `
-      <div class="decomp-label">${it.label}<span class="decomp-sub">${it.sub}</span></div>
-      <div class="decomp-track">
-        <div class="decomp-mid"></div>
-        <div class="decomp-fill" style="left:${left}%; width:${pctWidth}%; background:${color};"></div>
-      </div>
-      <div class="decomp-value" style="color:${color};">${it.val>=0?'+':''}${fmtMoney(it.val)}</div>
-    `;
+    const row=document.createElement('div'); row.className='decomp-row';
+    const w=(Math.abs(it.val)/maxAbs)*49, pos=it.val>=0, color=it.isTotal?'#181818':(pos?'#C8102E':'#1E8A5F');
+    row.innerHTML=`<div class="decomp-label">${it.label}<span class="decomp-sub">${it.sub}</span></div>
+      <div class="decomp-track"><div class="decomp-mid"></div><div class="decomp-fill" style="left:${pos?50:50-w}%; width:${w}%; background:${color};"></div></div>
+      <div class="decomp-value" style="color:${color};">${fmtSigned(it.val)}</div>`;
     container.appendChild(row);
   });
 }
 
-/* ---------------- top routes ranking ---------------- */
 function renderRoutes(container, routes, limit){
-  container.innerHTML = '';
-  const top = routes.slice(0, limit || routes.length);
-  const maxAbs = Math.max(...top.map(r=>r.fuel_hip), 1);
+  container.innerHTML='';
+  const top=routes.slice(0, limit||routes.length);
+  if(!top.length){ container.innerHTML='<div class="svc-empty">Sin salidas por Bus o Driver en el período seleccionado.</div>'; return; }
+  const maxAbs=Math.max(...top.map(r=>r.fuel_hip),1);
   top.forEach((r,i)=>{
-    const row = document.createElement('div');
-    row.className = 'top10-row';
-    const codes = r.servicios || [];
-    const visible = codes.slice(0, 6);
-    const rest = codes.length - visible.length;
-    const codesHtml = visible.map(s=>`<span class="svc-tag">${s}</span>`).join('') + (rest>0 ? `<span class="svc-tag svc-more" title="${codes.join(', ')}">+${rest} más</span>` : '');
-    row.innerHTML = `
-      <span class="top10-rank mono">${i+1}</span>
-      <span class="top10-name">${r.TripName}<span class="sub">${r.Carrier} · ${r.salidas} salidas · ${r.millas_fo.toLocaleString('en-US')} millas</span><span class="svc-row" title="${codes.join(', ')}">${codesHtml}</span></span>
-      <div class="top10-bar-track"><div class="top10-bar-fill" style="width:${(r.fuel_hip/maxAbs*100)}%"></div></div>
-      <span class="top10-value mono">${fmtMoney(r.fuel_hip)}</span>
-    `;
+    const row=document.createElement('div'); row.className='top10-row';
+    const codes=r.servicios||[], vis=codes.slice(0,6), rest=codes.length-vis.length;
+    const codesHtml=vis.map(s=>`<span class="svc-tag">${s}</span>`).join('')+(rest>0?`<span class="svc-tag svc-more" title="${codes.join(', ')}">+${rest} más</span>`:'');
+    row.innerHTML=`<span class="top10-rank mono">${i+1}</span>
+      <span class="top10-name">${r.TripName}<span class="sub">${r.Carrier} · ${r.salidas} salidas · ${fmtInt(r.millas_fo)} millas</span><span class="svc-row">${codesHtml}</span></span>
+      <div class="top10-bar-track"><div class="top10-bar-fill" style="width:${r.fuel_hip/maxAbs*100}%"></div></div>
+      <span class="top10-value mono">${fmtMoney(r.fuel_hip)}</span>`;
     container.appendChild(row);
   });
 }
 
-/* ---------------- monthly table ---------------- */
-function renderMonthlyTable(tbodyId, rows, ytdRow){
-  const tbody = document.getElementById(tbodyId);
-  tbody.innerHTML = '';
-  rows.forEach(r=>{
-    const tr = document.createElement('tr');
-    const varClass = r.var_d > 0 ? 'style="color:var(--alert); font-weight:600;"' : 'style="color:var(--good); font-weight:600;"';
-    tr.innerHTML = `
-      <td class="name">${r.mes}</td>
-      <td class="num mono">${fmtMoney(r.costo_pres)}</td>
-      <td class="num mono">${fmtMoney(r.costo_real)}</td>
-      <td class="num mono" ${varClass}>${r.var_d>=0?'+':'−'}${fmtMoney(r.var_d)}</td>
-      <td class="num"><span class="pct-pill ${r.var_pct<=0?'good':''}">${fmtPct(r.var_pct)}</span></td>
-      <td class="num mono">${Math.round(r.millas_real).toLocaleString('en-US')}</td>
-      <td class="num mono">${Math.round(r.galones_real).toLocaleString('en-US')}</td>
-      <td class="num mono">${r.mpg_real.toFixed(2)}</td>
-      <td class="num mono">${r.precio_galon.toFixed(2)}</td>
-      <td class="num mono">${fmtRate(r.milla_real_rate)}</td>
-    `;
-    tbody.appendChild(tr);
-  });
-  if(ytdRow){
-    const tr = document.createElement('tr');
-    tr.className = 'total-row';
-    const varClass = ytdRow.var_d > 0 ? 'style="color:var(--alert);"' : 'style="color:var(--good);"';
-    tr.innerHTML = `
-      <td class="name">YTD</td>
-      <td class="num mono">${fmtMoney(ytdRow.costo_pres)}</td>
-      <td class="num mono">${fmtMoney(ytdRow.costo_real)}</td>
-      <td class="num mono" ${varClass}>${ytdRow.var_d>=0?'+':'−'}${fmtMoney(ytdRow.var_d)}</td>
-      <td class="num"><span class="pct-pill ${ytdRow.var_pct<=0?'good':''}">${fmtPct(ytdRow.var_pct)}</span></td>
-      <td class="num mono">${Math.round(ytdRow.millas_real).toLocaleString('en-US')}</td>
-      <td class="num mono">${Math.round(ytdRow.galones_real).toLocaleString('en-US')}</td>
-      <td class="num mono">${ytdRow.mpg_real.toFixed(2)}</td>
-      <td class="num mono">${ytdRow.precio_galon.toFixed(2)}</td>
-      <td class="num mono">${fmtRate(ytdRow.milla_real_rate)}</td>
-    `;
-    tbody.appendChild(tr);
-  }
+function tableRow(label, r, cls){
+  const tr=document.createElement('tr'); if(cls) tr.className=cls;
+  const vc = r.var_d>0 ? 'color:var(--alert);' : 'color:var(--good);';
+  tr.innerHTML=`<td class="name">${label}</td><td class="num mono">${fmtMoney(r.costo_pres)}</td><td class="num mono">${fmtMoney(r.costo_real)}</td>
+    <td class="num mono" style="${vc} font-weight:600;">${fmtSigned(r.var_d)}</td><td class="num"><span class="pct-pill ${r.var_pct<=0?'good':''}">${fmtPct(r.var_pct)}</span></td>
+    <td class="num mono">${fmtInt(r.millas_real)}</td><td class="num mono">${fmtInt(r.galones_real)}</td><td class="num mono">${r.mpg_real.toFixed(2)}</td>
+    <td class="num mono">${r.precio_galon.toFixed(2)}</td><td class="num mono">${fmtRate(r.milla_real_rate)}</td>`;
+  return tr;
+}
+function renderMonthlyTable(tbodyId, rows, per, hl){
+  const tb=document.getElementById(tbodyId); tb.innerHTML='';
+  rows.forEach(r=>tb.appendChild(tableRow(r.mes, r, (hl&&r.mes===hl)?'sel-row':((hl)?'dim-row':''))));
+  if(!hl) tb.appendChild(tableRow(P.idx===0?'Enero':`Acum. Ene–${MESES[P.idx].slice(0,3)}`, per, 'total-row'));
 }
 
-/* ---------------- init per state ---------------- */
-function initState(prefix, stateKey){
-  const ytd = DATA.ytd[stateKey];
-  const monthly = DATA.monthly[stateKey];
-  const decomp = DATA.decomp_ytd[stateKey];
-  const hf = DATA.hidden_fuel_ytd[stateKey];
-  const hfMonthly = DATA.hidden_fuel_monthly[stateKey];
+/* ---------------- render ---------------- */
+const $ = id => document.getElementById(id);
+const setT = (id, v) => { const e=$(id); if(e) e.textContent=v; };
+let CUR = null;
 
-  document.getElementById(prefix+'-figure').textContent = fmtMoney(hf.fuel_hip_real);
-  document.getElementById(prefix+'-label').innerHTML = stateKey==='Consolidado'
-    ? `Si las millas que hoy se recorren por farm out en Florida y Texas se hubieran operado con bus propio, habríamos tenido un <b style="color:var(--alert)">sobrecosto adicional de fuel de ${fmtMoney(hf.fuel_hip_real)}</b> — dinero que hoy no vemos en nuestra cuenta de diesel porque lo asume el tercero.`
-    : `Si las millas que hoy se recorren por farm out en <b style="color:var(--alert)">${stateKey}</b> se hubieran operado con bus propio, habríamos tenido un <b style="color:var(--alert)">sobrecosto adicional de fuel de ${fmtMoney(hf.fuel_hip_real)}</b> — dinero que hoy no vemos en nuestra cuenta de diesel porque lo asume el tercero.`;
-  document.getElementById(prefix+'-hf-miles-hero').textContent = hf.millas_fo.toLocaleString('en-US');
-  document.getElementById(prefix+'-hf-fuel-pres-hero').textContent = fmtMoney(hf.fuel_hip_pres);
-  document.getElementById(prefix+'-rate-real').textContent = fmtRate(ytd.milla_real_rate);
-  document.getElementById(prefix+'-real').textContent = fmtMoney(ytd.var_d);
-
-  if(document.getElementById(prefix+'-hf-galones-sub')){
-    const galones = hf.galones_hip;
-    document.getElementById(prefix+'-hf-galones').textContent = Math.round(galones).toLocaleString('en-US');
-    document.getElementById(prefix+'-hf-galones-sub').textContent = `${hf.millas_fo.toLocaleString('en-US')} mi ÷ ${hf.mpg_usado.toFixed(2)} mpg`;
-    document.getElementById(prefix+'-hf-precio').textContent = '$'+hf.precio_usado.toFixed(2);
-  } else if(document.getElementById(prefix+'-hf-galones')){
-    document.getElementById(prefix+'-hf-galones').textContent = Math.round(hf.galones_hip).toLocaleString('en-US');
-  }
-
-  renderCostChart(document.getElementById(prefix+'-monthly-chart'), monthly);
-  renderMonthlyTable(prefix+'-monthly-body', monthly, ytd);
-  renderDecomp(document.getElementById(prefix+'-decomp'), decomp);
-
-  // Kilometraje vs. presupuesto (millas)
-  const millasDiff = ytd.millas_real - ytd.millas_pres;
-  const millasPct = millasDiff/ytd.millas_pres*100;
-  if(document.getElementById(prefix+'-millas-savings')){
-    document.getElementById(prefix+'-millas-diff').textContent = Math.round(Math.abs(millasDiff)).toLocaleString('en-US');
-    document.getElementById(prefix+'-millas-pct').textContent = fmtPct(millasPct);
-    document.getElementById(prefix+'-millas-savings').textContent = fmtMoney(Math.abs(decomp.imp_millas));
-  }
-  if(document.getElementById(prefix+'-millas-word')){
-    document.getElementById(prefix+'-millas-diff').textContent = Math.round(Math.abs(millasDiff)).toLocaleString('en-US');
-    document.getElementById(prefix+'-millas-word').textContent = millasDiff >= 0 ? 'más' : 'menos';
-  }
-
-  if(document.getElementById(prefix+'-hf-miles')){
-    document.getElementById(prefix+'-hf-miles').textContent = hf.millas_fo.toLocaleString('en-US');
-    document.getElementById(prefix+'-hf-fuel').textContent = fmtMoney(hf.fuel_hip_real);
-    document.getElementById(prefix+'-hf-fuel-pres').textContent = fmtMoney(hf.fuel_hip_pres);
-    renderHiddenFuelChart(document.getElementById(prefix+'-hf-chart'), hfMonthly);
-    const routes = DATA.by_route_fuel.filter(r=> stateKey==='Consolidado' ? true : r.Carrier===stateKey).sort((a,b)=>b.fuel_hip-a.fuel_hip);
-    renderRoutes(document.getElementById(prefix+'-hf-routes'), routes, stateKey==='Consolidado' ? 10 : routes.length);
-  }
+function renderState(prefix, s, D){
+  const per=D.per[s], dec=D.decomp[s], hf=D.hfy[s], hl = P.mode==='mes' ? MESES[P.idx] : null, pt=pText();
+  setT(prefix+'-figure', fmtMoney(hf.fuel_hip_real));
+  $(prefix+'-label').innerHTML = `Si las millas que se recorrieron por farm out ${s==='Consolidado'?'en Florida y Texas':`en <b style="color:var(--alert)">${s}</b>`} ${pt.entre} se hubieran operado con bus propio, habríamos tenido un <b style="color:var(--alert)">sobrecosto adicional de fuel de ${fmtMoney(hf.fuel_hip_real)}</b> — dinero que hoy no vemos en nuestra cuenta de diesel porque lo asume el tercero.`;
+  setT(prefix+'-hf-miles-hero', fmtInt(hf.millas_fo));
+  setT(prefix+'-hf-fuel-pres-hero', fmtMoney(hf.fuel_hip_pres));
+  setT(prefix+'-rate-real', fmtRate(per.milla_real_rate));
+  setT(prefix+'-real', fmtSigned(per.var_d));
+  setT(prefix+'-hf-miles', fmtInt(hf.millas_fo));
+  setT(prefix+'-hf-galones', fmtInt(hf.galones_hip));
+  if($(prefix+'-hf-galones-sub')) setT(prefix+'-hf-galones-sub', `${fmtInt(hf.millas_fo)} mi ÷ ${hf.mpg_usado.toFixed(2)} mpg`);
+  if($(prefix+'-hf-precio')) setT(prefix+'-hf-precio', '$'+hf.precio_usado.toFixed(2));
+  setT(prefix+'-hf-fuel', fmtMoney(hf.fuel_hip_real));
+  setT(prefix+'-hf-fuel-pres', fmtMoney(hf.fuel_hip_pres));
+  renderCostChart($(prefix+'-monthly-chart'), D.monthly[s], hl);
+  renderMonthlyTable(prefix+'-monthly-body', D.monthly[s], per, hl);
+  renderDecomp($(prefix+'-decomp'), dec);
+  renderHiddenFuelChart($(prefix+'-hf-chart'), D.hfm[s], hl);
+  const routes = s==='Consolidado' ? D.routes : D.routes.filter(r=>r.Carrier===s);
+  renderRoutes($(prefix+'-hf-routes'), routes, s==='Consolidado'?10:0);
 }
 
-initState('fl','Florida');
-initState('tx','Texas');
-initState('co','Consolidado');
+function renderCallouts(D){
+  const pt=pText();
+  const fl=D.per.Florida, flDiff=fl.millas_real-fl.millas_pres, flDec=D.decomp.Florida;
+  let trend='';
+  if(P.mode==='acum' && P.idx>0){ const a=D.monthly.Florida[0], z=D.monthly.Florida[D.monthly.Florida.length-1];
+    trend=` La brecha pasó de ${fmtSigned(a.millas_real-a.millas_pres).replace('$','')} millas en enero a ${fmtSigned(z.millas_real-z.millas_pres).replace('$','')} en ${low(z.mes)}.`; }
+  $('fl-millas-callout').innerHTML = flDiff<=0
+    ? `<b>Ahorro por menor kilometraje:</b> Florida recorrió <b>${fmtInt(-flDiff)}</b> millas menos de las presupuestadas ${pt.entre} (<b>${fmtPct(flDiff/fl.millas_pres*100)}</b>).${trend} Manteniendo precio y eficiencia constantes, ese menor kilometraje representó un <b style="color:var(--good)">ahorro de ${fmtMoney(flDec.imp_millas)}</b> frente al presupuesto de combustible.`
+    : `<b>Kilometraje:</b> Florida recorrió <b>${fmtInt(flDiff)}</b> millas más de las presupuestadas ${pt.entre} (<b>${fmtPct(flDiff/fl.millas_pres*100)}</b>), lo que sumó <b>${fmtMoney(flDec.imp_millas)}</b> al costo de combustible.`;
+  const tx=D.per.Texas, txDiff=tx.millas_real-tx.millas_pres, txDec=D.decomp.Texas;
+  $('tx-millas-callout').innerHTML = txDiff>0
+    ? `<b>Kilometraje:</b> Texas recorrió <b>${fmtInt(txDiff)}</b> millas más de las presupuestadas ${pt.entre} (<b>${fmtPct(txDiff/tx.millas_pres*100)}</b>) — el kilometraje no ayuda a compensar el sobrecosto de precio y suma <b>${fmtMoney(txDec.imp_millas)}</b>.`
+    : `<b>Kilometraje:</b> Texas recorrió <b>${fmtInt(-txDiff)}</b> millas menos de las presupuestadas ${pt.entre} (<b>${fmtPct(txDiff/tx.millas_pres*100)}</b>) — en este período el kilometraje sí ayudó, con un <b style="color:var(--good)">ahorro de ${fmtMoney(txDec.imp_millas)}</b>.`;
+  const c=D.decomp.Consolidado;
+  const parts=[['precio',c.imp_precio],['eficiencia de flota (MPG)',c.imp_eficiencia],['kilometraje',c.imp_millas]];
+  const up=parts.filter(p=>p[1]>0).sort((a,b)=>b[1]-a[1]), down=parts.filter(p=>p[1]<=0);
+  $('co-lectura').innerHTML = `<b>Lectura (${pt.long}):</b> el diesel costó <b>${fmtSigned(c.imp_total)}</b> frente al plan (precio ref. $3.30 × galones teóricos). `
+    + (up.length ? `Empujaron el costo hacia arriba: ${up.map(p=>`<b>${p[0]}</b> (${fmtSigned(p[1])})`).join(', ')}. ` : '')
+    + (down.length ? `Jugaron a favor: ${down.map(p=>`<b>${p[0]}</b> (${fmtSigned(p[1])})`).join(', ')}.` : 'Ninguna variable jugó a favor en este período.')
+    + (c.imp_millas<0 ? ' Parte del menor kilometraje propio se explica, justamente, por cubrir volumen con farm out.' : '');
+}
 
-/* consolidado extra KPIs */
-(function(){
-  const ytd = DATA.ytd.Consolidado;
-  const hf = DATA.hidden_fuel_ytd.Consolidado;
-  document.getElementById('co-k-pres').textContent = fmtMoney(ytd.costo_pres);
-  document.getElementById('co-k-real').textContent = fmtMoney(ytd.costo_real);
-  document.getElementById('co-k-var').textContent = fmtMoney(ytd.var_d);
-  document.getElementById('co-k-hf').textContent = fmtMoney(hf.fuel_hip_real);
-  document.getElementById('co-hf-pct').textContent = ((hf.millas_fo/(ytd.millas_real+hf.millas_fo))*100).toFixed(1)+'%';
-  document.getElementById('co-hf-inline').textContent = fmtMoney(hf.fuel_hip_real);
-  document.getElementById('ins-hf').textContent = fmtMoney(hf.fuel_hip_real);
-  document.getElementById('co-hf-galones').textContent = Math.round(hf.galones_hip).toLocaleString('en-US');
+function renderInsights(D){
+  const pt=pText(), h=D.hfy, per=D.per, c=D.decomp.Consolidado, tot=h.Consolidado.salidas;
+  const pctFl = h.Consolidado.fuel_hip_real>0 ? h.Florida.fuel_hip_real/h.Consolidado.fuel_hip_real*100 : 0;
+  const mpgTxt = s => `${s} ${per[s].mpg_real.toFixed(2)} vs ${MPG_PRES[s]} ppto.`;
+  const below = ['Florida','Texas'].filter(s=>per[s].mpg_real<MPG_PRES[s]);
+  const kmDiff = per.Consolidado.millas_real-per.Consolidado.millas_pres;
+  const ins = [
+    ['El costo oculto', `El sobrecosto de fuel que hubiéramos tenido en las millas recorridas por farm out ${pt.entre} ronda los <b>${fmtMoney(h.Consolidado.fuel_hip_real)}</b>. Es dinero que no vemos en la cuenta de diesel, pero que habría existido igual si el servicio fuera propio.`],
+    ['Precio', `El diesel real promedió <b>$${per.Consolidado.precio_galon.toFixed(2)}/gal</b> vs. $3.30 de referencia, con un impacto de <b>${fmtSigned(c.imp_precio)}</b>. Al ser precio de mercado, es la variable <b>menos controlable</b> por la operación.`],
+    ['Eficiencia de flota', below.length ? `El MPG real quedó por debajo del objetivo en ${below.map(mpgTxt).join(' y ')}, con un impacto de <b>${fmtSigned(c.imp_eficiencia)}</b>. Es la <b class="g">única palanca accionable</b> de las tres.` : `En este período el MPG real superó el objetivo (${['Florida','Texas'].map(mpgTxt).join('; ')}), aportando <b class="g">${fmtSigned(c.imp_eficiencia)}</b>.`],
+    ['Kilometraje', kmDiff<0 ? `Se manejaron <b class="g">${fmtInt(-kmDiff)}</b> millas propias menos que las presupuestadas — parcialmente porque una parte del volumen se resolvió vía farm out.` : `Se manejaron <b>${fmtInt(kmDiff)}</b> millas propias más que las presupuestadas, así que el kilometraje no compensó el sobrecosto.`],
+    ['Florida vs. Texas', `Florida concentra <b>${pctFl.toFixed(0)}%</b> del fuel oculto (${h.Florida.salidas} salidas, ${fmtInt(h.Florida.millas_fo)} millas); Texas aporta ${h.Texas.salidas} salidas y ${fmtInt(h.Texas.millas_fo)} millas, a una tasa de $${D.rate.Texas.toFixed(3)}/milla vs. $${D.rate.Florida.toFixed(3)} en Florida.`],
+    ['Por qué se farmeó', tot ? `De las ${tot} salidas del período, <b>${h.Consolidado.driver} (${(h.Consolidado.driver/tot*100).toFixed(0)}%)</b> fueron por falta de <b>Driver</b> y <b>${h.Consolidado.bus} (${(h.Consolidado.bus/tot*100).toFixed(0)}%)</b> por falta de <b>Bus</b>. Florida: ${h.Florida.driver} Driver / ${h.Florida.bus} Bus · Texas: ${h.Texas.driver} Driver / ${h.Texas.bus} Bus.` : 'Sin salidas por Bus o Driver en el período.'],
+    ['Validación de datos', `Las salidas farmeadas salen de la hoja Resumen (Copia de Farmouts 2026), filtrando <b class="g">solo los registros con motivo Bus o Driver</b>. Los registros de ida y vuelta (ej. 8022/8023) cuentan como una salida con la milla de uno de los servicios; cuando falta la milla se toma la distancia real del servicio ese día (hoja data) o su milla habitual.`],
+    ['Próximo paso', `Esta misma lógica de prorrateo por millas puede extenderse a otras partidas variables (Tolls, Oil &amp; Lubes, Tires) para aislar qué parte del farm out es realmente "extra" y cuál habría ocurrido de todas formas.`]
+  ];
+  $('insights').innerHTML = ins.map(([t,p])=>`<div class="insight"><div class="tag">${t}</div><p>${p}</p></div>`).join('');
+}
 
-  const hfFl = DATA.hidden_fuel_ytd.Florida, hfTx = DATA.hidden_fuel_ytd.Texas;
-  document.getElementById('co-formula-fl').innerHTML =
-    `${Math.round(hfFl.millas_fo).toLocaleString('en-US')} mi ÷ ${hfFl.mpg_usado.toFixed(2)} mpg = ${Math.round(hfFl.galones_hip).toLocaleString('en-US')} gal × $${hfFl.precio_usado.toFixed(2)}/gal = ${fmtMoney(hfFl.fuel_hip_real)}`;
-  document.getElementById('co-formula-tx').innerHTML =
-    `${Math.round(hfTx.millas_fo).toLocaleString('en-US')} mi ÷ ${hfTx.mpg_usado.toFixed(2)} mpg = ${Math.round(hfTx.galones_hip).toLocaleString('en-US')} gal × $${hfTx.precio_usado.toFixed(2)}/gal = ${fmtMoney(hfTx.fuel_hip_real)}`;
-})();
+function renderConsolidadoExtras(D){
+  const per=D.per.Consolidado, hf=D.hfy.Consolidado;
+  setT('co-k-pres', fmtMoney(per.costo_pres)); setT('co-k-real', fmtMoney(per.costo_real));
+  setT('co-k-var', fmtSigned(per.var_d)); setT('co-k-hf', fmtMoney(hf.fuel_hip_real));
+  setT('co-hf-pct', ((hf.millas_fo/(per.millas_real+hf.millas_fo))*100).toFixed(1)+'%');
+  setT('co-hf-inline', fmtMoney(hf.fuel_hip_real)); setT('co-var-inline', fmtSigned(per.var_d));
+  const f = x => `${fmtInt(x.millas_fo)} mi ÷ ${x.mpg_usado.toFixed(2)} mpg = ${fmtInt(x.galones_hip)} gal × $${x.precio_usado.toFixed(2)}/gal = ${fmtMoney(x.fuel_hip_real)}`;
+  setT('co-formula-fl', f(D.hfy.Florida)); setT('co-formula-tx', f(D.hfy.Texas));
+  ['Florida','Texas'].forEach(s=>{ const p=D.per[s]; setT('ft-'+(s==='Florida'?'fl':'tx'), `$${p.precio_galon.toFixed(2)}/gal y ${p.mpg_real.toFixed(2)} mpg (tasa $${p.milla_real_rate.toFixed(3)}/milla)`); });
+}
 
 /* ---------------- buscar por servicio ---------------- */
-const MONTH_ORDER_SVC = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio"];
+function populateSvcSelect(D){
+  const sel=$('svcSelect'), prev=sel.value;
+  sel.innerHTML='<option value="" disabled>Selecciona un servicio…</option>';
+  ['Florida','Texas'].forEach(st=>{
+    const list=D.services.filter(s=>s.Carrier===st); if(!list.length) return;
+    const g=document.createElement('optgroup'); g.label=st;
+    list.forEach(s=>{ const o=document.createElement('option'); o.value=s.Service; o.textContent=`#${s.Service} — ${s.TripName} (${fmtMoney(s.fuel_hip)})`; g.appendChild(o); });
+    sel.appendChild(g);
+  });
+  const still = D.services.find(s=>String(s.Service)===prev);
+  if(still){ sel.value=prev; renderSvcDetail(still,false); }
+  else { sel.value=''; $('svcDetail').style.display='none'; if(prev) $('svcGone').style.display='block'; }
+}
+function renderSvcDetail(s, scroll){
+  $('svcGone').style.display='none';
+  const pt=pText();
+  $('svcDetail').style.display='block';
+  setT('svc-figure', fmtMoney(s.fuel_hip));
+  $('svc-label').innerHTML=`El servicio <b style="color:var(--alert)">#${s.Service}</b> (${s.TripName}, ${s.Carrier}) generó un sobrecosto oculto de fuel de <b style="color:var(--alert)">${fmtMoney(s.fuel_hip)}</b> ${pt.entre} — lo que hubiéramos gastado de más en diesel si esas salidas se hubieran operado con bus propio.`;
+  setT('svc-route', s.TripName); setT('svc-state', s.Carrier); setT('svc-salidas', s.salidas); setT('svc-motivo', `${s.bus} / ${s.driver}`);
+  setT('svc-millas', fmtInt(s.millas_fo)); setT('svc-fuel-real', fmtMoney(s.fuel_hip)); setT('svc-fuel-pres', fmtMoney(s.fuel_hip_pres)); setT('svc-avg', fmtMoney(s.fuel_hip/s.salidas));
+  const tb=$('svc-monthly-body'); tb.innerHTML='';
+  const by={}; s.detalle_mensual.forEach(d=>by[d.Mes]=d);
+  periodMonths().forEach(m=>{ const d=by[m], tr=document.createElement('tr');
+    tr.innerHTML = d ? `<td class="name">${m}</td><td class="num mono">${d.salidas}</td><td class="num mono">${fmtInt(d.millas)}</td><td class="num mono" style="color:var(--alert); font-weight:600;">${fmtMoney(d.fuel_hip)}</td>`
+                     : `<td class="name">${m}</td><td class="num mono">—</td><td class="num mono">—</td><td class="num mono">—</td>`;
+    tb.appendChild(tr); });
+  if(scroll) $('svcDetail').scrollIntoView({behavior:'smooth', block:'start'});
+}
+$('svcSelect').addEventListener('change', e=>{ const s=CUR.services.find(x=>String(x.Service)===e.target.value); if(s) renderSvcDetail(s,true); });
 
-function populateSvcSelect(){
-  const select = document.getElementById('svcSelect');
-  ['Florida','Texas'].forEach(state=>{
-    const group = document.createElement('optgroup');
-    group.label = state;
-    BY_SERVICE.filter(s=>s.Carrier===state).sort((a,b)=>b.fuel_hip-a.fuel_hip).forEach(s=>{
-      const opt = document.createElement('option');
-      opt.value = s.Service;
-      opt.textContent = `#${s.Service} — ${s.TripName} (${fmtMoney(s.fuel_hip)})`;
-      group.appendChild(opt);
-    });
-    select.appendChild(group);
-  });
-  select.addEventListener('change', e=>{
-    const svc = BY_SERVICE.find(s=>String(s.Service)===e.target.value);
-    if(svc) renderSvcDetail(svc);
-  });
+/* ---------------- master render ---------------- */
+function renderAll(){
+  const D = compute(); CUR = D; const pt=pText();
+  document.querySelectorAll('.p-short').forEach(e=>e.textContent=pt.short);
+  document.querySelectorAll('.p-long').forEach(e=>e.textContent=pt.long);
+  document.querySelectorAll('.p-desc').forEach(e=>e.textContent=pt.desc);
+  renderState('fl','Florida',D); renderState('tx','Texas',D); renderState('co','Consolidado',D);
+  renderConsolidadoExtras(D); renderCallouts(D); renderInsights(D); populateSvcSelect(D);
 }
 
-function renderSvcDetail(s){
-  const detail = document.getElementById('svcDetail');
-  detail.style.display = 'block';
-  document.getElementById('svc-figure').textContent = fmtMoney(s.fuel_hip);
-  document.getElementById('svc-label').innerHTML = `El servicio <b style="color:var(--alert)">#${s.Service}</b> (${s.TripName}, ${s.Carrier}) generó un sobrecosto oculto de fuel de <b style="color:var(--alert)">${fmtMoney(s.fuel_hip)}</b> entre enero y julio — lo que hubiéramos gastado de más en diesel si esas salidas se hubieran operado con bus propio.`;
-  document.getElementById('svc-route').textContent = s.TripName;
-  document.getElementById('svc-state').textContent = s.Carrier;
-  document.getElementById('svc-salidas').textContent = s.salidas;
-  document.getElementById('svc-millas').textContent = s.millas_fo.toLocaleString('en-US');
-  document.getElementById('svc-fuel-real').textContent = fmtMoney(s.fuel_hip);
-  document.getElementById('svc-fuel-pres').textContent = fmtMoney(s.fuel_hip_pres);
-  document.getElementById('svc-avg').textContent = fmtMoney(s.fuel_hip/s.salidas);
+/* ---------------- period controls ---------------- */
+(function(){
+  const ms=$('monthSelect');
+  MESES.forEach((m,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=m; ms.appendChild(o); });
+  ms.value=P.idx;
+  ms.addEventListener('change', ()=>{ P.idx=+ms.value; renderAll(); });
+  document.querySelectorAll('.seg-toggle button').forEach(b=>b.addEventListener('click', ()=>{
+    P.mode=b.dataset.mode; document.querySelectorAll('.seg-toggle button').forEach(x=>x.classList.toggle('active', x===b));
+    $('monthLabel').textContent = P.mode==='acum' ? 'Hasta' : 'Mes'; renderAll();
+  }));
+})();
+renderAll();
 
-  const tbody = document.getElementById('svc-monthly-body');
-  tbody.innerHTML = '';
-  const byMonth = {};
-  (s.detalle_mensual||[]).forEach(d=>{ byMonth[d.Mes] = d; });
-  MONTH_ORDER_SVC.forEach(mes=>{
-    const d = byMonth[mes];
-    const tr = document.createElement('tr');
-    if(d){
-      tr.innerHTML = `<td class="name">${mes}</td><td class="num mono">${d.salidas}</td><td class="num mono">${Math.round(d.millas).toLocaleString('en-US')}</td><td class="num mono" style="color:var(--alert); font-weight:600;">${fmtMoney(d.fuel_hip)}</td>`;
-    } else {
-      tr.innerHTML = `<td class="name">${mes}</td><td class="num mono">—</td><td class="num mono">—</td><td class="num mono">—</td>`;
-    }
-    tbody.appendChild(tr);
-  });
-  detail.scrollIntoView({behavior:'smooth', block:'start'});
-}
-
-populateSvcSelect();
-
-/* ---------------- tabs ---------------- */
-document.getElementById('tabbar').addEventListener('click', e=>{
-  const btn = e.target.closest('button');
-  if(!btn) return;
+/* ---------------- tabs / misc ---------------- */
+$('tabbar').addEventListener('click', e=>{
+  const btn=e.target.closest('button'); if(!btn) return;
   document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('active', b===btn));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
-  document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  $('panel-'+btn.dataset.tab).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
 });
+window.addEventListener('scroll', ()=>{ $('toTop').classList.toggle('show', window.scrollY > 500); }, {passive:true});
+$('toTop').addEventListener('click', ()=>window.scrollTo({top:0, behavior:'smooth'}));
 
-/* ---------------- back to top ---------------- */
-window.addEventListener('scroll', ()=>{ document.getElementById('toTop').classList.toggle('show', window.scrollY > 500); }, {passive:true});
-document.getElementById('toTop').addEventListener('click', ()=>window.scrollTo({top:0, behavior:'smooth'}));
-
-window.addEventListener('resize', ()=>{
-  document.querySelectorAll('.panel.active [id$="-monthly-chart"]').forEach(h=>{
-    const prefix = h.id.split('-')[0];
-    const key = prefix==='fl'?'Florida':prefix==='tx'?'Texas':'Consolidado';
-    renderCostChart(h, DATA.monthly[key]);
-  });
-  document.querySelectorAll('.panel.active [id$="-hf-chart"]').forEach(h=>{
-    const prefix = h.id.split('-')[0];
-    const key = prefix==='fl'?'Florida':prefix==='tx'?'Texas':'Consolidado';
-    renderHiddenFuelChart(h, DATA.hidden_fuel_monthly[key]);
-  });
-});
 </script>
 
 </body>
